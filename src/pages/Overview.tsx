@@ -102,7 +102,6 @@ export default function Overview() {
     Descontos: Number(d.descontos),
   }));
 
-  // Arrecadação por tipo (pie)
   const [tiposData, setTiposData] = useState<{ name: string; value: number }[]>([]);
   useEffect(() => {
     dashboardApi.getArrecadacaoPorTipo(ano, mes)
@@ -112,11 +111,11 @@ export default function Overview() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Visão Geral</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Visão Geral</h1>
             <p className="text-slate-500 text-sm mt-1">Resumo do desempenho mensal do estacionamento</p>
           </div>
           <MonthSelector ano={ano} mes={mes} onChange={(a, m) => { setAno(a); setMes(m); }} />
@@ -132,7 +131,7 @@ export default function Overview() {
         {loadingKpi ? (
           <LoadingSpinner label="Carregando KPIs..." />
         ) : kpi ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Fluxo Total"
               value={INT(kpi.fluxo_total)}
@@ -173,13 +172,13 @@ export default function Overview() {
         ) : (
           <>
             {/* Flow Chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Fluxo Diário por Tipo de Veículo</h2>
               {fluxoChartData.length === 0 ? (
                 <div className="text-center text-slate-400 py-12">Sem dados de fluxo para o período.</div>
               ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={fluxoChartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={fluxoChartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="dia" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
@@ -194,13 +193,13 @@ export default function Overview() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Receita Diária</h2>
               {receitaChartData.length === 0 ? (
                 <div className="text-center text-slate-400 py-12">Sem dados de receita para o período.</div>
               ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={receitaChartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={receitaChartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="gradFat" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
@@ -223,31 +222,33 @@ export default function Overview() {
               )}
             </div>
 
-            {/* Pie chart - arrecadação por tipo */}
+            {/* Pie chart */}
             {tiposData.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
                 <h2 className="text-base font-semibold text-slate-700 mb-4">Arrecadação por Forma de Pagamento</h2>
-                <div className="flex flex-col lg:flex-row items-center gap-6">
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie
-                        data={tiposData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={90}
-                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-                        labelLine
-                      >
-                        {tiposData.map((_, index) => (
-                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v) => BRL(v as number)} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <ul className="text-sm text-slate-600 space-y-2 min-w-[180px]">
+                <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6">
+                  <div className="w-full">
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={tiposData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
+                          labelLine
+                        >
+                          {tiposData.map((_, index) => (
+                            <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v) => BRL(v as number)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <ul className="text-sm text-slate-600 space-y-2 w-full lg:min-w-[180px] lg:w-auto">
                     {tiposData.map((d, i) => (
                       <li key={i} className="flex items-center gap-2">
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />

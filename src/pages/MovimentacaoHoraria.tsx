@@ -71,11 +71,11 @@ export default function MovimentacaoHorariaPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Movimentação Horária</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Movimentação Horária</h1>
             <p className="text-slate-500 text-sm mt-1">Fluxo de entradas e saídas por faixa horária</p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
@@ -83,7 +83,7 @@ export default function MovimentacaoHorariaPage() {
             <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm bg-white">
               <button
                 onClick={() => setVisao('categoria')}
-                className={`px-4 py-1.5 font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 font-medium transition-colors ${
                   visao === 'categoria'
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-600 hover:bg-slate-50'
@@ -93,13 +93,13 @@ export default function MovimentacaoHorariaPage() {
               </button>
               <button
                 onClick={() => setVisao('veiculo')}
-                className={`px-4 py-1.5 font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 font-medium transition-colors ${
                   visao === 'veiculo'
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                Por Tipo de Veículo
+                Por Tipo
               </button>
             </div>
             <input
@@ -127,7 +127,7 @@ export default function MovimentacaoHorariaPage() {
         ) : visao === 'categoria' ? (
           <>
             {/* Peak info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {peakEntry && (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                   <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide">Pico de Entradas</p>
@@ -145,10 +145,10 @@ export default function MovimentacaoHorariaPage() {
             </div>
 
             {/* Area chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Entradas e Saídas por Faixa Horária</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={chartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="gradE" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
@@ -160,7 +160,7 @@ export default function MovimentacaoHorariaPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={50} />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" height={45} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v) => INT(v as number)} />
                   <Legend />
@@ -171,12 +171,12 @@ export default function MovimentacaoHorariaPage() {
             </div>
 
             {/* Stacked by category chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Entradas por Categoria</h2>
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={chartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={50} />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" height={45} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v) => INT(v as number)} />
                   <Legend />
@@ -189,7 +189,7 @@ export default function MovimentacaoHorariaPage() {
 
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
+              <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
                 <h2 className="text-base font-semibold text-slate-700">Detalhamento por Faixa Horária</h2>
               </div>
               <div className="overflow-x-auto">
@@ -234,12 +234,12 @@ export default function MovimentacaoHorariaPage() {
           /* ---- Visão Por Tipo de Veículo ---- */
           <>
             {/* Bar chart Carros vs Motos entradas */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Entradas e Saídas por Tipo de Veículo</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={veicChartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={veicChartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={50} />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" height={45} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v) => INT(v as number)} />
                   <Legend />
@@ -253,7 +253,7 @@ export default function MovimentacaoHorariaPage() {
 
             {/* Detailed vehicle table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
+              <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
                 <h2 className="text-base font-semibold text-slate-700">Detalhamento por Tipo de Veículo</h2>
               </div>
               <div className="overflow-x-auto">

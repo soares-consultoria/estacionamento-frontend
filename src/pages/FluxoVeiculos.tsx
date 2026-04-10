@@ -62,26 +62,26 @@ function CategoriaView({ data, mes, ano }: { data: FluxoDiario[]; mes: number; a
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Rotativo', value: INT(totals.rotativo), color: 'bg-blue-50 text-blue-700 border-blue-100' },
           { label: 'Credenciado', value: INT(totals.credenciado), color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
           { label: 'Mensalista', value: INT(totals.mensalista), color: 'bg-amber-50 text-amber-700 border-amber-100' },
           { label: 'Total Entradas', value: INT(totals.total), color: 'bg-violet-50 text-violet-700 border-violet-100' },
         ].map((c) => (
-          <div key={c.label} className={`rounded-xl border p-4 ${c.color}`}>
+          <div key={c.label} className={`rounded-xl border p-3 sm:p-4 ${c.color}`}>
             <p className="text-xs font-medium opacity-70">{c.label}</p>
-            <p className="text-xl font-bold mt-1">{c.value}</p>
+            <p className="text-lg sm:text-xl font-bold mt-1">{c.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
         <h2 className="text-base font-semibold text-slate-700 mb-4">
           Entradas por Dia — {MESES[mes]} {ano}
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={chartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="dia" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
@@ -96,7 +96,7 @@ function CategoriaView({ data, mes, ano }: { data: FluxoDiario[]; mes: number; a
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
+        <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
           <h2 className="text-base font-semibold text-slate-700">Tabela Detalhada</h2>
         </div>
         <div className="overflow-x-auto">
@@ -225,11 +225,11 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
   return (
     <>
       {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {kpiCards.map((c) => (
-          <div key={c.label} className={`rounded-xl border p-4 ${c.color}`}>
+          <div key={c.label} className={`rounded-xl border p-3 sm:p-4 ${c.color}`}>
             <p className="text-xs font-medium opacity-70">{c.label}</p>
-            <p className="text-xl font-bold mt-1">{INT(c.value)}</p>
+            <p className="text-lg sm:text-xl font-bold mt-1">{INT(c.value)}</p>
             <p className="text-xs mt-0.5 opacity-60">{c.pct.toFixed(1)}% do total</p>
             <MiniBar pct={c.pct} color={c.bar} />
           </div>
@@ -237,7 +237,7 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
       </div>
 
       {/* Category breakdown cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
           {
             label: 'Rotativo',
@@ -285,12 +285,12 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
       </div>
 
       {/* Stacked bar chart by vehicle type */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
         <h2 className="text-base font-semibold text-slate-700 mb-4">
           Entradas por Tipo de Veículo — {MESES[mes]} {ano}
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={chartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="dia" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} />
@@ -305,7 +305,7 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
 
       {/* Detailed table grouped by category */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
+        <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
           <h2 className="text-base font-semibold text-slate-700">Tabela por Tipo de Veículo</h2>
         </div>
         <div className="overflow-x-auto">
@@ -403,19 +403,19 @@ export default function FluxoVeiculos() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Fluxo de Veículos</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Fluxo de Veículos</h1>
             <p className="text-slate-500 text-sm mt-1">Detalhamento diário por categoria e tipo de veículo</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             {/* Toggle */}
             <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm bg-white">
               <button
                 onClick={() => setVisao('categoria')}
-                className={`px-4 py-1.5 font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 font-medium transition-colors ${
                   visao === 'categoria'
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-600 hover:bg-slate-50'
@@ -425,13 +425,13 @@ export default function FluxoVeiculos() {
               </button>
               <button
                 onClick={() => setVisao('veiculo')}
-                className={`px-4 py-1.5 font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 font-medium transition-colors ${
                   visao === 'veiculo'
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                Por Tipo de Veículo
+                Por Tipo
               </button>
             </div>
             <select

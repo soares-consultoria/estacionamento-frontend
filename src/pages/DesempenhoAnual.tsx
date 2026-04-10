@@ -46,7 +46,6 @@ export default function DesempenhoAnualPage() {
       .finally(() => setLoading(false));
   }, [anoAtual, anoAnterior]);
 
-  // Build combined chart data aligned by month number
   const mapByMes = (list: DesempenhoAnual[]) => {
     const m: Record<number, DesempenhoAnual> = {};
     list.forEach((d) => { m[d.mes_numero] = d; });
@@ -78,7 +77,6 @@ export default function DesempenhoAnualPage() {
     };
   });
 
-  // Totals for summary
   const sumAtual = dataAtual.reduce((acc, d) => ({
     fluxo: acc.fluxo + (d.fluxo_total ?? 0),
     receita: acc.receita + Number(d.receita_total ?? 0),
@@ -93,14 +91,14 @@ export default function DesempenhoAnualPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Desempenho Anual</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Desempenho Anual</h1>
             <p className="text-slate-500 text-sm mt-1">Comparativo mensal entre dois anos</p>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-500">Ano atual:</span>
               <select
@@ -112,7 +110,7 @@ export default function DesempenhoAnualPage() {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">Comparar com:</span>
+              <span className="text-sm text-slate-500">Comparar:</span>
               <select
                 className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white"
                 value={anoAnterior}
@@ -133,7 +131,7 @@ export default function DesempenhoAnualPage() {
         ) : (
           <>
             {/* Summary comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
                 {
                   label: 'Fluxo Total',
@@ -154,7 +152,7 @@ export default function DesempenhoAnualPage() {
                   pct: pctDiff(sumAtual.pagantes, sumAnterior.pagantes),
                 },
               ].map((c) => (
-                <div key={c.label} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+                <div key={c.label} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{c.label}</p>
                   <p className="text-xl font-bold text-slate-800 mt-2">{c.atual}</p>
                   <div className="flex items-center justify-between mt-1">
@@ -170,10 +168,10 @@ export default function DesempenhoAnualPage() {
             </div>
 
             {/* Fluxo bar chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Fluxo Mensal — {anoAnterior} vs {anoAtual}</h2>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={chartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
@@ -186,10 +184,10 @@ export default function DesempenhoAnualPage() {
             </div>
 
             {/* Receita bar chart */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
               <h2 className="text-base font-semibold text-slate-700 mb-4">Arrecadação Mensal — {anoAnterior} vs {anoAtual}</h2>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={receitaChartData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={receitaChartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
@@ -203,7 +201,7 @@ export default function DesempenhoAnualPage() {
 
             {/* Monthly comparison table */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
+              <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
                 <h2 className="text-base font-semibold text-slate-700">Tabela Comparativa Mensal</h2>
               </div>
               <div className="overflow-x-auto">
