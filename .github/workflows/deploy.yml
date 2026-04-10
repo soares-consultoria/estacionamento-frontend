@@ -47,7 +47,7 @@ jobs:
           target: "/home/ec2-user/frontend-dist"
           strip_components: 1
 
-      - name: Mover arquivos e recarregar Nginx
+      - name: Mover arquivos, aplicar Nginx config e recarregar
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ec2-16-58-227-174.us-east-2.compute.amazonaws.com
@@ -57,4 +57,36 @@ jobs:
           script: |
             sudo cp -r /home/ec2-user/frontend-dist/* /usr/share/nginx/html/
             sudo rm -rf /home/ec2-user/frontend-dist
+
+            sudo tee /etc/nginx/conf.d/estacionamento-frontend.conf > /dev/null << 'NGINXCONF'
+            server {
+                listen 80;
+                server_name _;
+
+                root /usr/share/nginx/html;
+                index index.html;
+
+                gzip on;
+                gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+                gzip_min_length 1000;
+
+                location ~* /assets/ {
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+
+                location /estacionamento-api/ {
+                    proxy_pass http://localhost:8181/estacionamento-api/;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_read_timeout 120s;
+                }
+            }
+            NGINXCONF
+
             sudo nginx -t && sudo systemctl reload nginx
