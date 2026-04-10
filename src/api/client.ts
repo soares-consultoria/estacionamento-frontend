@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8181/estacionamento-api/api/dashboard';
+const BASE_URL = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8181/estacionamento-api'}/api/dashboard`;
 
 async function fetchJson<T>(path: string, params?: Record<string, string | number>): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
