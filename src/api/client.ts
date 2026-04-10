@@ -9,6 +9,7 @@ async function fetchJson<T>(path: string, params?: Record<string, string | numbe
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
+
   return response.json() as Promise<T>;
 }
 
