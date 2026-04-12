@@ -170,7 +170,7 @@ export interface ProcessamentoResultado {
   arquivo_processado_id: number | null;
   nome_arquivo: string;
   status: string;
-  mensagem: string;
+  mensagem: string | null;
   quantidade_erros: number;
   quantidade_avisos: number;
   ocorrencias: OcorrenciaProcessamento[];

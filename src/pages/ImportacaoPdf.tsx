@@ -182,9 +182,12 @@ export default function ImportacaoPdfPage() {
   );
 }
 
+const STATUS_OK = ['SUCESSO', 'PROCESSADO', 'IA_PROCESSADA'];
+const STATUS_WARN = ['DUPLICADO', 'JA_IMPORTADO'];
+
 function ResultadoCard({ resultado }: { resultado: ProcessamentoResultado }) {
-  const isOk = resultado.status === 'SUCESSO' || resultado.status === 'PROCESSADO';
-  const isDuplicate = resultado.status === 'DUPLICADO';
+  const isOk = STATUS_OK.includes(resultado.status);
+  const isDuplicate = STATUS_WARN.includes(resultado.status);
 
   return (
     <div className={[
@@ -215,7 +218,7 @@ function ResultadoCard({ resultado }: { resultado: ProcessamentoResultado }) {
             'text-sm mt-1',
             isOk ? 'text-green-800' : isDuplicate ? 'text-yellow-800' : 'text-red-800',
           ].join(' ')}>
-            {resultado.mensagem}
+            {resultado.mensagem ?? (isOk ? 'Arquivo processado com sucesso.' : isDuplicate ? 'Arquivo já importado anteriormente.' : 'Erro ao processar o arquivo.')}
           </p>
           {(resultado.quantidade_erros > 0 || resultado.quantidade_avisos > 0) && (
             <p className="text-xs text-slate-500 mt-1">
