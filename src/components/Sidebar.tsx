@@ -1,4 +1,4 @@
-import { BarChart2, Building2, Car, Clock, Home, LogOut, TrendingUp, Users, X } from 'lucide-react';
+import { BarChart2, Building2, Car, Clock, Home, LogOut, TrendingUp, UploadCloud, Users, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -86,6 +86,33 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               ))}
             </ul>
           </div>
+
+          {/* Importação */}
+          {isAdmin && (
+            <div>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                Importação
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <NavLink
+                    to="/importacao"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <UploadCloud size={18} />
+                    Importar PDF
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Administração */}
           {isAdmin && (

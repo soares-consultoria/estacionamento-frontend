@@ -158,3 +158,32 @@ export const adminApi = {
   updateUsuario: (id: number, data: { nome: string; role?: Role; ativo?: boolean }) =>
     api.put<UsuarioAdmin>(`/api/admin/usuarios/${id}`, data).then(r => r.data),
 };
+
+export interface OcorrenciaProcessamento {
+  severidade: string;
+  codigo: string;
+  campo: string | null;
+  mensagem: string;
+}
+
+export interface ProcessamentoResultado {
+  arquivo_processado_id: number | null;
+  nome_arquivo: string;
+  status: string;
+  mensagem: string;
+  quantidade_erros: number;
+  quantidade_avisos: number;
+  ocorrencias: OcorrenciaProcessamento[];
+}
+
+export const importacaoApi = {
+  importarPdf: (file: File, instituicaoId?: number) => {
+    const form = new FormData();
+    form.append('file', file);
+    const params = instituicaoId ? { instituicaoId: String(instituicaoId) } : {};
+    return api.post<ProcessamentoResultado>('/api/importacao/pdf', form, {
+      params,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+};

@@ -12,6 +12,7 @@ import MovimentacaoHorariaPage from './pages/MovimentacaoHoraria';
 import Overview from './pages/Overview';
 import InstituicoesPage from './pages/admin/Instituicoes';
 import UsuariosPage from './pages/admin/Usuarios';
+import ImportacaoPdfPage from './pages/ImportacaoPdf';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
 
 function AppLayout() {
@@ -59,6 +60,7 @@ function AppLayout() {
             <Route path="/anual" element={<ProtectedRoute><DesempenhoAnualPage /></ProtectedRoute>} />
             <Route path="/admin/instituicoes" element={<ProtectedRoute><InstituicoesPage /></ProtectedRoute>} />
             <Route path="/admin/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
+            <Route path="/importacao" element={<ProtectedRoute><ImportacaoPdfPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>
