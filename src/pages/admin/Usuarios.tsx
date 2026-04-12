@@ -77,7 +77,7 @@ export default function UsuariosPage() {
     setSaving(true);
     try {
       await adminApi.createUsuario({
-        instituicaoId: isSuperAdmin ? createForm.instituicaoId! : user!.instituicaoId,
+        instituicao_id: isSuperAdmin ? createForm.instituicaoId! : user!.instituicaoId,
         nome: createForm.nome,
         email: createForm.email,
         senha: createForm.senha,
@@ -314,7 +314,7 @@ export default function UsuariosPage() {
                         <td className="px-5 py-3 font-medium text-slate-800">{u.nome}</td>
                         <td className="px-5 py-3 text-slate-500">{u.email}</td>
                         {isSuperAdmin && (
-                          <td className="px-5 py-3 text-slate-500">{u.nomeInstituicao}</td>
+                          <td className="px-5 py-3 text-slate-500">{u.nome_instituicao}</td>
                         )}
                         <td className="px-5 py-3">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${

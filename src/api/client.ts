@@ -124,19 +124,19 @@ export interface Instituicao {
   nome: string;
   cnpj: string | null;
   ativo: boolean;
-  criadoEm: string;
+  criado_em: string;
 }
 
 export interface UsuarioAdmin {
   id: number;
-  instituicaoId: number;
-  nomeInstituicao: string;
+  instituicao_id: number;
+  nome_instituicao: string;
   nome: string;
   email: string;
   role: string;
   ativo: boolean;
-  criadoEm: string;
-  ultimoLogin: string | null;
+  criado_em: string;
+  ultimo_login: string | null;
 }
 
 export const adminApi = {
@@ -152,7 +152,7 @@ export const adminApi = {
   listUsuarios: () =>
     api.get<UsuarioAdmin[]>('/api/admin/usuarios').then(r => r.data),
 
-  createUsuario: (data: { instituicaoId: number; nome: string; email: string; senha: string; role: Role }) =>
+  createUsuario: (data: { instituicao_id: number; nome: string; email: string; senha: string; role: Role }) =>
     api.post<UsuarioAdmin>('/api/admin/usuarios', data).then(r => r.data),
 
   updateUsuario: (id: number, data: { nome: string; role?: Role; ativo?: boolean }) =>

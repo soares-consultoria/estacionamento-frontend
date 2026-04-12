@@ -48,15 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       nome: string;
       email: string;
       role: string;
-      instituicaoId: number;
-      expiracaoMs: number;
+      instituicao_id: number;
+      expiracao_ms: number;
     }>('/api/auth/login', { email, senha });
 
     const authUser: AuthUser = {
       nome: data.nome,
       email: data.email,
       role: data.role,
-      instituicaoId: data.instituicaoId,
+      instituicaoId: data.instituicao_id,
       token: data.token,
     };
 
