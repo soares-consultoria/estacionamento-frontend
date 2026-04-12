@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BarChart2, Lock, Mail } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetOk = (location.state as { resetOk?: boolean })?.resetOk ?? false;
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,12 @@ export default function LoginPage() {
 
         <h1 className="text-2xl font-bold text-slate-800 mb-1">Entrar</h1>
         <p className="text-slate-400 text-sm mb-6">Acesse sua conta para continuar</p>
+
+        {resetOk && (
+          <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm mb-4">
+            Senha redefinida com sucesso! Faça login com a nova senha.
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">
