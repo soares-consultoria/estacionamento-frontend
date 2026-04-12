@@ -12,6 +12,8 @@ import MovimentacaoHorariaPage from './pages/MovimentacaoHoraria';
 import Overview from './pages/Overview';
 import InstituicoesPage from './pages/admin/Instituicoes';
 import UsuariosPage from './pages/admin/Usuarios';
+import EsqueciSenhaPage from './pages/EsqueciSenha';
+import ResetarSenhaPage from './pages/ResetarSenha';
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,6 +73,8 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
+          <Route path="/resetar-senha" element={<ResetarSenhaPage />} />
           <Route path="/*" element={<AppLayout />} />
         </Routes>
       </AuthProvider>

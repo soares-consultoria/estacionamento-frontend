@@ -1,25 +1,45 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BarChart2, Lock, Mail } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { BarChart2, Lock } from 'lucide-react';
+import api from '../lib/axios';
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function ResetarSenhaPage() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const token = searchParams.get('token') ?? '';
+
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmar, setConfirmar] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!token) {
+    return (
+      <div className="w-full min-h-screen bg-white sm:bg-slate-100 sm:flex sm:items-center sm:justify-center sm:p-4">
+        <div className="w-full sm:max-w-sm sm:bg-white sm:rounded-2xl sm:shadow-sm sm:border sm:border-slate-100 p-6 py-10 sm:p-8 text-center">
+          <p className="text-slate-500 text-sm mb-4">Link inválido ou expirado.</p>
+          <Link to="/login" className="text-blue-500 hover:text-blue-600 text-sm font-medium">
+            ← Voltar para o login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    if (novaSenha !== confirmar) {
+      setError('As senhas não conferem.');
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
-      await login(email, senha);
-      navigate('/', { replace: true });
-    } catch {
-      setError('E-mail ou senha inválidos.');
+      await api.post('/api/auth/redefinir-senha', { token, novaSenha });
+      navigate('/login', { state: { resetOk: true } });
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { mensagem?: string } } };
+      setError(e?.response?.data?.mensagem ?? 'Token inválido ou expirado.');
     } finally {
       setLoading(false);
     }
@@ -39,8 +59,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-slate-800 mb-1">Entrar</h1>
-        <p className="text-slate-400 text-sm mb-6">Acesse sua conta para continuar</p>
+        <h1 className="text-2xl font-bold text-slate-800 mb-1">Nova senha</h1>
+        <p className="text-slate-400 text-sm mb-6">Escolha uma senha com no mínimo 6 caracteres.</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">
@@ -51,36 +71,38 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-              E-mail
-            </label>
-            <div className="relative">
-              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="seu@email.com"
-                autoComplete="email"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-              Senha
+              Nova senha
             </label>
             <div className="relative">
               <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="password"
                 required
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
+                minLength={6}
+                value={novaSenha}
+                onChange={e => setNovaSenha(e.target.value)}
                 className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="••••••••"
-                autoComplete="current-password"
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Confirmar senha
+            </label>
+            <div className="relative">
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirmar}
+                onChange={e => setConfirmar(e.target.value)}
+                className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="••••••••"
+                autoComplete="new-password"
               />
             </div>
           </div>
@@ -90,18 +112,15 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3.5 rounded-lg text-base transition-colors mt-2"
           >
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Salvando...' : 'Redefinir senha'}
           </button>
-
-          <div className="text-center pt-1">
-            <Link
-              to="/esqueci-senha"
-              className="text-slate-400 hover:text-blue-500 text-sm transition-colors"
-            >
-              Esqueci minha senha
-            </Link>
-          </div>
         </form>
+
+        <div className="mt-5 text-center">
+          <Link to="/login" className="text-slate-400 hover:text-slate-600 text-sm transition-colors">
+            ← Voltar para o login
+          </Link>
+        </div>
       </div>
     </div>
   );
