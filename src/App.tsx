@@ -15,6 +15,7 @@ import Overview from './pages/Overview';
 import InstituicoesPage from './pages/admin/Instituicoes';
 import UsuariosPage from './pages/admin/Usuarios';
 import ImportacaoPdfPage from './pages/ImportacaoPdf';
+import ComparativoPage from './pages/Comparativo';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
 
 function InstituicaoSelector() {
@@ -93,6 +94,7 @@ function AppLayout() {
             <Route path="/admin/instituicoes" element={<ProtectedRoute><InstituicoesPage /></ProtectedRoute>} />
             <Route path="/admin/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
             <Route path="/importacao" element={<ProtectedRoute><ImportacaoPdfPage /></ProtectedRoute>} />
+            <Route path="/comparativo" element={<ProtectedRoute><ComparativoPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

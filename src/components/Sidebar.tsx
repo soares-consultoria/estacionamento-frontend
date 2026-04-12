@@ -1,4 +1,4 @@
-import { BarChart2, Building2, Car, Clock, Home, LogOut, TrendingUp, UploadCloud, Users, X } from 'lucide-react';
+import { BarChart2, Building2, Car, Clock, GitCompare, Home, LogOut, TrendingUp, UploadCloud, Users, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -7,6 +7,7 @@ const dashboardItems = [
   { to: '/fluxo', label: 'Fluxo de Veículos', icon: Car },
   { to: '/horario', label: 'Movimentação Horária', icon: Clock },
   { to: '/anual', label: 'Desempenho Anual', icon: TrendingUp },
+  { to: '/comparativo', label: 'Comparativo', icon: GitCompare },
 ];
 
 interface SidebarProps {
