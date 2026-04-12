@@ -117,6 +117,24 @@ export const dashboardApi = {
 
   getFluxoHorarioVeiculo: (data: string) =>
     fetchJson<FluxoHorarioVeiculo[]>('/fluxo-horario-veiculo', { data }),
+
+  getAnaliseDiaSemana: (ano: number, mes: number) =>
+    fetchJson<AnaliseDiaSemana[]>('/analise-dia-semana', { ano, mes }),
+
+  getRankingInstituicoes: (ano: number, mes: number) =>
+    fetchJson<RankingInstituicao[]>('/ranking', { ano, mes }),
+
+  getAnaliseTolerancia: (ano: number, mes: number) =>
+    fetchJson<ResumoTolerancia>('/analise-tolerancia', { ano, mes }),
+
+  getPrevisao: (ano: number, mes: number) =>
+    fetchJson<Previsao>('/previsao', { ano, mes }),
+
+  getMeta: (ano: number, mes: number) =>
+    fetchJson<MetaMensal>('/meta', { ano, mes }),
+
+  salvarMeta: (data: { ano: number; mes: number; meta_fluxo?: number | null; meta_receita?: number | null }) =>
+    api.post<MetaMensal>('/api/dashboard/meta', data).then(r => r.data),
 };
 
 export interface Instituicao {
@@ -174,6 +192,71 @@ export interface ProcessamentoResultado {
   quantidade_erros: number;
   quantidade_avisos: number;
   ocorrencias: OcorrenciaProcessamento[];
+}
+
+export interface AnaliseDiaSemana {
+  dia_semana: string;
+  media_fluxo: number;
+  total_fluxo: number;
+  media_receita: number;
+  total_receita: number;
+  media_pagantes: number;
+  total_tolerancia: number;
+  qtd_dias: number;
+}
+
+export interface RankingInstituicao {
+  posicao: number;
+  instituicao_id: number;
+  nome_instituicao: string;
+  fluxo_total: number;
+  receita_total: number;
+  pagantes_total: number;
+  ticket_medio: number;
+  dias_com_dados: number;
+}
+
+export interface ResumoTolerancia {
+  total_entradas: number;
+  total_tolerancia: number;
+  total_pagantes: number;
+  pct_tolerancia: number;
+  pct_pagantes: number;
+  detalhe: AnaliseToleranciaDia[];
+}
+
+export interface AnaliseToleranciaDia {
+  data: string;
+  dia_semana: string;
+  total_entradas: number;
+  pagantes: number;
+  tolerancia: number;
+  tolerancia_pct: number;
+  credenciado: number;
+  mensalista: number;
+}
+
+export interface Previsao {
+  ano_previsao: number;
+  mes_previsao: number;
+  mes_nome: string;
+  previsao_fluxo: number;
+  previsao_receita: number;
+  previsao_ticket_medio: number;
+  base_calculo: string;
+  meses_utilizados: number;
+}
+
+export interface MetaMensal {
+  id: number | null;
+  ano: number;
+  mes: number;
+  meta_fluxo: number | null;
+  meta_receita: number | null;
+  fluxo_realizado: number;
+  receita_realizada: number;
+  pct_fluxo: number | null;
+  pct_receita: number | null;
 }
 
 export const importacaoApi = {

@@ -1,4 +1,4 @@
-import { BarChart2, Building2, Car, Clock, GitCompare, Home, LogOut, TrendingUp, UploadCloud, Users, X } from 'lucide-react';
+import { BarChart2, Building2, CalendarDays, Car, Clock, GitCompare, Home, LogOut, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -8,6 +8,10 @@ const dashboardItems = [
   { to: '/horario', label: 'Movimentação Horária', icon: Clock },
   { to: '/anual', label: 'Desempenho Anual', icon: TrendingUp },
   { to: '/comparativo', label: 'Comparativo', icon: GitCompare },
+  { to: '/semana', label: 'Dias da Semana', icon: CalendarDays },
+  { to: '/metas', label: 'Metas', icon: Target },
+  { to: '/gratuidade', label: 'Gratuidade', icon: Zap },
+  { to: '/previsao', label: 'Previsão', icon: TrendingUp },
 ];
 
 interface SidebarProps {
@@ -122,6 +126,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 Administração
               </p>
               <ul className="space-y-1">
+                {isSuperAdmin && (
+                  <li>
+                    <NavLink
+                      to="/ranking"
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`
+                      }
+                    >
+                      <Trophy size={18} />
+                      Ranking
+                    </NavLink>
+                  </li>
+                )}
                 {isSuperAdmin && (
                   <li>
                     <NavLink

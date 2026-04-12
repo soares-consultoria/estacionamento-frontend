@@ -16,6 +16,11 @@ import InstituicoesPage from './pages/admin/Instituicoes';
 import UsuariosPage from './pages/admin/Usuarios';
 import ImportacaoPdfPage from './pages/ImportacaoPdf';
 import ComparativoPage from './pages/Comparativo';
+import AnaliseSemanaPage from './pages/AnaliseSemana';
+import MetasPage from './pages/Metas';
+import RankingPage from './pages/Ranking';
+import GratuidadePage from './pages/Gratuidade';
+import PrevisaoPage from './pages/Previsao';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
 
 function InstituicaoSelector() {
@@ -95,6 +100,11 @@ function AppLayout() {
             <Route path="/admin/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
             <Route path="/importacao" element={<ProtectedRoute><ImportacaoPdfPage /></ProtectedRoute>} />
             <Route path="/comparativo" element={<ProtectedRoute><ComparativoPage /></ProtectedRoute>} />
+            <Route path="/semana" element={<ProtectedRoute><AnaliseSemanaPage /></ProtectedRoute>} />
+            <Route path="/metas" element={<ProtectedRoute><MetasPage /></ProtectedRoute>} />
+            <Route path="/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
+            <Route path="/gratuidade" element={<ProtectedRoute><GratuidadePage /></ProtectedRoute>} />
+            <Route path="/previsao" element={<ProtectedRoute><PrevisaoPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>
