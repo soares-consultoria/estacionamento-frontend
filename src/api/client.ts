@@ -177,12 +177,10 @@ export interface ProcessamentoResultado {
 }
 
 export const importacaoApi = {
-  importarPdf: (file: File, instituicaoId?: number) => {
+  importarPdf: (file: File) => {
     const form = new FormData();
     form.append('file', file);
-    const params = instituicaoId ? { instituicaoId: String(instituicaoId) } : {};
     return api.post<ProcessamentoResultado>('/api/importacao/pdf', form, {
-      params,
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data);
   },

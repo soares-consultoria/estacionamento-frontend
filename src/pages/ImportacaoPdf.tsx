@@ -1,26 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, FileUp, Loader2, UploadCloud, XCircle } from 'lucide-react';
-import { adminApi, importacaoApi, type Instituicao, type ProcessamentoResultado } from '../api/client';
-import { useAuth } from '../hooks/useAuth';
+import { importacaoApi, type ProcessamentoResultado } from '../api/client';
 
 export default function ImportacaoPdfPage() {
-  const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [instituicaoId, setInstituicaoId] = useState<number | ''>('');
-  const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<ProcessamentoResultado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isSuperAdmin) {
-      adminApi.listInstituicoes().then(list => setInstituicoes(list.filter(i => i.ativo)));
-    }
-  }, [isSuperAdmin]);
 
   const handleFile = useCallback((f: File) => {
     if (!f.name.toLowerCase().endsWith('.pdf')) {
@@ -48,15 +36,11 @@ export default function ImportacaoPdfPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
-    if (isSuperAdmin && !instituicaoId) {
-      setErro('Selecione a instituição antes de importar.');
-      return;
-    }
     setLoading(true);
     setResultado(null);
     setErro(null);
     try {
-      const res = await importacaoApi.importarPdf(file, isSuperAdmin ? Number(instituicaoId) : undefined);
+      const res = await importacaoApi.importarPdf(file);
       setResultado(res);
       setFile(null);
     } catch (err: unknown) {
@@ -66,8 +50,6 @@ export default function ImportacaoPdfPage() {
       setLoading(false);
     }
   }
-
-  const canSubmit = file && !loading && (!isSuperAdmin || !!instituicaoId);
 
   return (
     <div className="h-full overflow-auto p-4 sm:p-6 lg:p-8">
@@ -80,26 +62,6 @@ export default function ImportacaoPdfPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Seleção de instituição — somente SUPER_ADMIN */}
-          {isSuperAdmin && (
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                Instituição
-              </label>
-              <select
-                value={instituicaoId}
-                onChange={e => setInstituicaoId(e.target.value ? Number(e.target.value) : '')}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-800"
-                required={isSuperAdmin}
-              >
-                <option value="">Selecione a instituição...</option>
-                {instituicoes.map(i => (
-                  <option key={i.id} value={i.id}>{i.nome}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
           {/* Drop zone */}
           <div
             onClick={() => !file && inputRef.current?.click()}
@@ -158,7 +120,7 @@ export default function ImportacaoPdfPage() {
 
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={!file || loading}
             className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg text-sm transition-colors"
           >
             {loading ? (
@@ -175,7 +137,6 @@ export default function ImportacaoPdfPage() {
           </button>
         </form>
 
-        {/* Resultado */}
         {resultado && <ResultadoCard resultado={resultado} />}
       </div>
     </div>
