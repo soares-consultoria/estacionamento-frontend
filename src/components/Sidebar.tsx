@@ -1,5 +1,6 @@
-import { BarChart2, Car, Clock, Home, TrendingUp, X } from 'lucide-react';
+import { BarChart2, Car, Clock, Home, LogOut, TrendingUp, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const navItems = [
   { to: '/', label: 'Visão Geral', icon: Home },
@@ -14,6 +15,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { user, logout } = useAuth();
+
   return (
     <>
       {/* Backdrop (mobile only) */}
@@ -82,7 +85,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-700">
-          <p className="text-slate-500 text-xs">v1.0.0 &mdash; Dashboard</p>
+          {user && (
+            <div className="mb-3">
+              <p className="text-slate-300 text-xs font-semibold truncate">{user.nome}</p>
+              <p className="text-slate-500 text-xs truncate">{user.email}</p>
+            </div>
+          )}
+          <button
+            onClick={() => { onClose(); logout(); }}
+            className="flex items-center gap-2 text-slate-400 hover:text-white text-xs transition-colors"
+          >
+            <LogOut size={14} />
+            Sair
+          </button>
         </div>
       </aside>
     </>

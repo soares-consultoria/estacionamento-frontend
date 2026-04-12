@@ -1,16 +1,8 @@
-const BASE_URL = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8181/estacionamento-api'}/api/dashboard`;
+import api from '../lib/axios';
 
 async function fetchJson<T>(path: string, params?: Record<string, string | number>): Promise<T> {
-  const url = new URL(`${BASE_URL}${path}`);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
-  }
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-
-  return response.json() as Promise<T>;
+  const { data } = await api.get<T>(`/api/dashboard${path}`, { params });
+  return data;
 }
 
 export interface KpiMensal {
