@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<Role, string> = {
 };
 
 interface CreateForm {
-  instituicaoId: number | '';
+  instituicaoId: number | null;
   nome: string;
   email: string;
   senha: string;
@@ -31,7 +31,7 @@ interface UpdateForm {
   ativo: boolean;
 }
 
-const emptyCreate: CreateForm = { instituicaoId: '', nome: '', email: '', senha: '', role: 'USER' };
+const emptyCreate: CreateForm = { instituicaoId: null, nome: '', email: '', senha: '', role: 'USER' };
 
 export default function UsuariosPage() {
   const { user } = useAuth();
@@ -77,7 +77,7 @@ export default function UsuariosPage() {
     setSaving(true);
     try {
       await adminApi.createUsuario({
-        instituicaoId: (isSuperAdmin ? createForm.instituicaoId : user!.instituicaoId) as number,
+        instituicaoId: isSuperAdmin ? createForm.instituicaoId! : user!.instituicaoId,
         nome: createForm.nome,
         email: createForm.email,
         senha: createForm.senha,
@@ -125,7 +125,7 @@ export default function UsuariosPage() {
           </div>
           <button
             onClick={() => {
-              const defaultInst = isSuperAdmin ? (instituicoes.find(i => i.ativo)?.id ?? '') : '';
+              const defaultInst = isSuperAdmin ? (instituicoes.find(i => i.ativo)?.id ?? null) : null;
               setCreateForm({ ...emptyCreate, instituicaoId: defaultInst });
               setError(null);
               setShowCreate(true);
@@ -154,8 +154,8 @@ export default function UsuariosPage() {
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Instituição *</label>
                   <select
                     required
-                    value={createForm.instituicaoId}
-                    onChange={e => setCreateForm(f => ({ ...f, instituicaoId: Number(e.target.value) }))}
+                    value={createForm.instituicaoId ?? ''}
+                    onChange={e => setCreateForm(f => ({ ...f, instituicaoId: e.target.value ? Number(e.target.value) : null }))}
                     className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Selecione...</option>
