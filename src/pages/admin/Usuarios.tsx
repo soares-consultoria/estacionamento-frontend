@@ -70,7 +70,10 @@ export default function UsuariosPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (createForm.instituicaoId === '' && isSuperAdmin) return;
+    if (isSuperAdmin && !createForm.instituicaoId) {
+      setError('Selecione uma instituição.');
+      return;
+    }
     setSaving(true);
     try {
       await adminApi.createUsuario({
@@ -121,7 +124,13 @@ export default function UsuariosPage() {
             <h1 className="text-xl font-bold text-slate-800">Usuários</h1>
           </div>
           <button
-            onClick={() => { setShowCreate(true); setEditingUser(null); }}
+            onClick={() => {
+              const defaultInst = isSuperAdmin ? (instituicoes.find(i => i.ativo)?.id ?? '') : '';
+              setCreateForm({ ...emptyCreate, instituicaoId: defaultInst });
+              setError(null);
+              setShowCreate(true);
+              setEditingUser(null);
+            }}
             className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             <Plus size={16} />
