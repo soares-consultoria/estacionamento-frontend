@@ -41,6 +41,7 @@ function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const { selectedId } = useInstituicao();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
@@ -83,7 +84,7 @@ function AppLayout() {
           )}
         </header>
 
-        <main className="flex-1 overflow-hidden">
+        <main key={isSuperAdmin ? (selectedId ?? 'none') : 'fixed'} className="flex-1 overflow-hidden">
           <Routes>
             <Route path="/" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
             <Route path="/fluxo" element={<ProtectedRoute><FluxoVeiculos /></ProtectedRoute>} />
