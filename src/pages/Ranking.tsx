@@ -58,8 +58,9 @@ export default function Ranking() {
       .finally(() => setLoading(false));
   }, [ano, mes]);
 
-  const top3 = dados.slice(0, 3);
-  const maxReceita = dados.length ? Math.max(...dados.map(d => d.receita_total)) : 1;
+  const comDados = dados.filter(d => d.dias_com_dados > 0);
+  const top3 = comDados.slice(0, 3);
+  const maxReceita = comDados.length ? Math.max(...comDados.map(d => d.receita_total), 1) : 1;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -81,8 +82,8 @@ export default function Ranking() {
 
         {loading ? (
           <LoadingSpinner label="Carregando ranking..." />
-        ) : dados.length === 0 ? (
-          <div className="text-center text-slate-400 py-16">Nenhum dado disponível para o período.</div>
+        ) : comDados.length === 0 ? (
+          <div className="text-center text-slate-400 py-16">Nenhuma instituição com dados para o período selecionado.</div>
         ) : (
           <>
             {/* Podium */}
@@ -141,7 +142,7 @@ export default function Ranking() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {dados.map((inst) => (
+                  {comDados.map((inst) => (
                     <tr key={inst.instituicao_id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3 text-center">
                         {inst.posicao <= 3 ? (
