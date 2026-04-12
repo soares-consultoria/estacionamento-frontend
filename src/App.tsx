@@ -10,6 +10,8 @@ import DesempenhoAnualPage from './pages/DesempenhoAnual';
 import FluxoVeiculos from './pages/FluxoVeiculos';
 import MovimentacaoHorariaPage from './pages/MovimentacaoHoraria';
 import Overview from './pages/Overview';
+import InstituicoesPage from './pages/admin/Instituicoes';
+import UsuariosPage from './pages/admin/Usuarios';
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -54,6 +56,8 @@ function AppLayout() {
             <Route path="/fluxo" element={<ProtectedRoute><FluxoVeiculos /></ProtectedRoute>} />
             <Route path="/horario" element={<ProtectedRoute><MovimentacaoHorariaPage /></ProtectedRoute>} />
             <Route path="/anual" element={<ProtectedRoute><DesempenhoAnualPage /></ProtectedRoute>} />
+            <Route path="/admin/instituicoes" element={<ProtectedRoute><InstituicoesPage /></ProtectedRoute>} />
+            <Route path="/admin/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

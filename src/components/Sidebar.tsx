@@ -1,8 +1,8 @@
-import { BarChart2, Car, Clock, Home, LogOut, TrendingUp, X } from 'lucide-react';
+import { BarChart2, Building2, Car, Clock, Home, LogOut, TrendingUp, Users, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const navItems = [
+const dashboardItems = [
   { to: '/', label: 'Visão Geral', icon: Home },
   { to: '/fluxo', label: 'Fluxo de Veículos', icon: Car },
   { to: '/horario', label: 'Movimentação Horária', icon: Clock },
@@ -16,6 +16,8 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
 
   return (
     <>
@@ -56,31 +58,79 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-            Painel
-          </p>
-          <ul className="space-y-1">
-            {navItems.map(({ to, label, icon: Icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  end={to === '/'}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-                    }`
-                  }
-                >
-                  <Icon size={18} />
-                  {label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+          {/* Painel */}
+          <div>
+            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+              Painel
+            </p>
+            <ul className="space-y-1">
+              {dashboardItems.map(({ to, label, icon: Icon }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    end={to === '/'}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Icon size={18} />
+                    {label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Administração */}
+          {isAdmin && (
+            <div>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                Administração
+              </p>
+              <ul className="space-y-1">
+                {isSuperAdmin && (
+                  <li>
+                    <NavLink
+                      to="/admin/instituicoes"
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`
+                      }
+                    >
+                      <Building2 size={18} />
+                      Instituições
+                    </NavLink>
+                  </li>
+                )}
+                <li>
+                  <NavLink
+                    to="/admin/usuarios"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Users size={18} />
+                    Usuários
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
         </nav>
 
         {/* Footer */}

@@ -1,4 +1,5 @@
 import api from '../lib/axios';
+import type { Role } from '../types/admin';
 
 async function fetchJson<T>(path: string, params?: Record<string, string | number>): Promise<T> {
   const { data } = await api.get<T>(`/api/dashboard${path}`, { params });
@@ -116,4 +117,44 @@ export const dashboardApi = {
 
   getFluxoHorarioVeiculo: (data: string) =>
     fetchJson<FluxoHorarioVeiculo[]>('/fluxo-horario-veiculo', { data }),
+};
+
+export interface Instituicao {
+  id: number;
+  nome: string;
+  cnpj: string | null;
+  ativo: boolean;
+  criadoEm: string;
+}
+
+export interface UsuarioAdmin {
+  id: number;
+  instituicaoId: number;
+  nomeInstituicao: string;
+  nome: string;
+  email: string;
+  role: string;
+  ativo: boolean;
+  criadoEm: string;
+  ultimoLogin: string | null;
+}
+
+export const adminApi = {
+  listInstituicoes: () =>
+    api.get<Instituicao[]>('/api/admin/instituicoes').then(r => r.data),
+
+  createInstituicao: (data: { nome: string; cnpj?: string }) =>
+    api.post<Instituicao>('/api/admin/instituicoes', data).then(r => r.data),
+
+  updateInstituicao: (id: number, data: { nome: string; cnpj?: string; ativo?: boolean }) =>
+    api.put<Instituicao>(`/api/admin/instituicoes/${id}`, data).then(r => r.data),
+
+  listUsuarios: () =>
+    api.get<UsuarioAdmin[]>('/api/admin/usuarios').then(r => r.data),
+
+  createUsuario: (data: { instituicaoId: number; nome: string; email: string; senha: string; role: Role }) =>
+    api.post<UsuarioAdmin>('/api/admin/usuarios', data).then(r => r.data),
+
+  updateUsuario: (id: number, data: { nome: string; role?: Role; ativo?: boolean }) =>
+    api.put<UsuarioAdmin>(`/api/admin/usuarios/${id}`, data).then(r => r.data),
 };
