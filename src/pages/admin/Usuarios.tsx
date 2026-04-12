@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, Edit2, Plus, Users, XCircle } from 'lucide-react';
+import type { AxiosError } from 'axios';
 import { adminApi, type Instituicao, type UsuarioAdmin } from '../../api/client';
 import { useAuth } from '../../hooks/useAuth';
 import type { Role } from '../../types/admin';
+
+function apiError(err: unknown, fallback: string): string {
+  const e = err as AxiosError<{ mensagem?: string; message?: string }>;
+  return e?.response?.data?.mensagem ?? e?.response?.data?.message ?? fallback;
+}
 
 const ROLES: Role[] = ['SUPER_ADMIN', 'ADMIN', 'USER'];
 const ROLE_LABELS: Record<Role, string> = {
@@ -53,8 +59,8 @@ export default function UsuariosPage() {
       ]);
       setUsuarios(us);
       setInstituicoes(insts);
-    } catch {
-      setError('Erro ao carregar dados.');
+    } catch (err) {
+      setError(apiError(err, 'Erro ao carregar dados.'));
     } finally {
       setLoading(false);
     }
@@ -77,8 +83,8 @@ export default function UsuariosPage() {
       setShowCreate(false);
       setCreateForm(emptyCreate);
       await load();
-    } catch {
-      setError('Erro ao criar usuário.');
+    } catch (err) {
+      setError(apiError(err, 'Erro ao criar usuário.'));
     } finally {
       setSaving(false);
     }
@@ -97,8 +103,8 @@ export default function UsuariosPage() {
       await adminApi.updateUsuario(editingUser.id, updateForm);
       setEditingUser(null);
       await load();
-    } catch {
-      setError('Erro ao atualizar usuário.');
+    } catch (err) {
+      setError(apiError(err, 'Erro ao atualizar usuário.'));
     } finally {
       setSaving(false);
     }
