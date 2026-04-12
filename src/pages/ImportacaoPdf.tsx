@@ -185,7 +185,6 @@ export default function ImportacaoPdfPage() {
 function ResultadoCard({ resultado }: { resultado: ProcessamentoResultado }) {
   const isOk = resultado.status === 'SUCESSO' || resultado.status === 'PROCESSADO';
   const isDuplicate = resultado.status === 'DUPLICADO';
-  const isError = !isOk && !isDuplicate;
 
   return (
     <div className={[
