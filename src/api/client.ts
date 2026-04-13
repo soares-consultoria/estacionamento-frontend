@@ -264,7 +264,7 @@ export interface InstituicaoPlanoAdmin {
   nome: string;
   cnpj: string | null;
   plano: string;
-  max_usuarios: number;
+  maxUsuarios: number;
   ativo: boolean;
 }
 

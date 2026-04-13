@@ -10,7 +10,7 @@ interface InstituicaoPlano {
   nome: string;
   cnpj: string | null;
   plano: PlanoNome;
-  max_usuarios: number;
+  maxUsuarios: number;
   ativo: boolean;
 }
 
@@ -95,7 +95,7 @@ export default function PlanoGestao() {
     setSuccessId(null);
     try {
       const { data } = await api.put<InstituicaoPlano>(`/api/admin/planos/instituicao/${id}`, { plano });
-      setInstituicoes(prev => prev.map(i => i.id === id ? { ...i, plano: data.plano, max_usuarios: data.max_usuarios } : i));
+      setInstituicoes(prev => prev.map(i => i.id === id ? { ...i, plano: data.plano, maxUsuarios: data.maxUsuarios } : i));
       setSuccessId(id);
       setTimeout(() => setSuccessId(null), 2000);
     } catch (e: unknown) {
@@ -189,7 +189,7 @@ export default function PlanoGestao() {
                           {planoAtual.label}
                         </span>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          {inst.max_usuarios >= 999999 ? 'Ilimitados' : `Até ${inst.max_usuarios}`} usuários
+                          {inst.maxUsuarios >= 999999 ? 'Ilimitados' : `Até ${inst.maxUsuarios}`} usuários
                         </p>
                       </td>
                       <td className="px-4 py-3">
