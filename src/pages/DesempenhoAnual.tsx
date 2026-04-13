@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FeatureGate } from '../components/FeatureGate';
 import {
   Bar,
   BarChart,
@@ -90,6 +91,7 @@ export default function DesempenhoAnualPage() {
   }), { fluxo: 0, receita: 0, pagantes: 0 });
 
   return (
+    <FeatureGate funcionalidade="desempenho-anual">
     <div className="h-full overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
@@ -251,5 +253,6 @@ export default function DesempenhoAnualPage() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }

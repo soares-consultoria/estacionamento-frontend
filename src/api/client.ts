@@ -259,6 +259,23 @@ export interface MetaMensal {
   pct_receita: number | null;
 }
 
+export interface InstituicaoPlanoAdmin {
+  id: number;
+  nome: string;
+  cnpj: string | null;
+  plano: string;
+  max_usuarios: number;
+  ativo: boolean;
+}
+
+export const planoApi = {
+  listInstituicoesComPlano: () =>
+    api.get<InstituicaoPlanoAdmin[]>('/api/admin/planos').then(r => r.data),
+
+  updatePlanoInstituicao: (id: number, plano: string) =>
+    api.put<InstituicaoPlanoAdmin>(`/api/admin/planos/instituicao/${id}`, { plano }).then(r => r.data),
+};
+
 export const importacaoApi = {
   importarPdf: (file: File) => {
     const form = new FormData();

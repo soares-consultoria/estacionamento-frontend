@@ -1,3 +1,4 @@
+import { FeatureGate } from '../components/FeatureGate';
 import { useEffect, useState } from 'react';
 import {
   Bar,
@@ -88,6 +89,7 @@ export default function AnaliseSemana() {
   const worst = dados.length ? dados.reduce((a, b) => a.media_fluxo < b.media_fluxo ? a : b) : null;
 
   return (
+    <FeatureGate funcionalidade="analise-dia-semana">
     <div className="h-full overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
@@ -190,5 +192,6 @@ export default function AnaliseSemana() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }

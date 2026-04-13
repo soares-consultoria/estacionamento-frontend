@@ -1,3 +1,4 @@
+import { FeatureGate } from '../components/FeatureGate';
 import { useEffect, useState } from 'react';
 import { dashboardApi, type Previsao } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -67,6 +68,7 @@ export default function PrevisaoPage() {
   }, [ano, mes]);
 
   return (
+    <FeatureGate funcionalidade="previsao">
     <div className="h-full overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
@@ -154,5 +156,6 @@ export default function PrevisaoPage() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }

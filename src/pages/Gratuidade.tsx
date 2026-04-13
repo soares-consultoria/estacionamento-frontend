@@ -1,3 +1,4 @@
+import { FeatureGate } from '../components/FeatureGate';
 import { useEffect, useState } from 'react';
 import {
   Bar,
@@ -86,6 +87,7 @@ export default function Gratuidade() {
   }));
 
   return (
+    <FeatureGate funcionalidade="analise-tolerancia">
     <div className="h-full overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
@@ -214,5 +216,6 @@ export default function Gratuidade() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }

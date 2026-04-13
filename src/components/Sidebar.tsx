@@ -1,17 +1,18 @@
-import { BarChart2, Building2, CalendarDays, Car, Clock, GitCompare, Home, LogOut, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
+import { BarChart2, Building2, CalendarDays, Car, Clock, CreditCard, GitCompare, Home, Lock, LogOut, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { usePlano } from '../hooks/usePlano';
 
 const dashboardItems = [
-  { to: '/', label: 'Visão Geral', icon: Home },
-  { to: '/fluxo', label: 'Fluxo de Veículos', icon: Car },
-  { to: '/horario', label: 'Movimentação Horária', icon: Clock },
-  { to: '/anual', label: 'Desempenho Anual', icon: TrendingUp },
-  { to: '/comparativo', label: 'Comparativo', icon: GitCompare },
-  { to: '/semana', label: 'Dias da Semana', icon: CalendarDays },
-  { to: '/metas', label: 'Metas', icon: Target },
-  { to: '/gratuidade', label: 'Gratuidade', icon: Zap },
-  { to: '/previsao', label: 'Previsão', icon: TrendingUp },
+  { to: '/', label: 'Visão Geral', icon: Home, funcionalidade: 'kpi-mensal' },
+  { to: '/fluxo', label: 'Fluxo de Veículos', icon: Car, funcionalidade: 'fluxo-diario' },
+  { to: '/horario', label: 'Movimentação Horária', icon: Clock, funcionalidade: 'movimentacao-horaria' },
+  { to: '/anual', label: 'Desempenho Anual', icon: TrendingUp, funcionalidade: 'desempenho-anual' },
+  { to: '/comparativo', label: 'Comparativo', icon: GitCompare, funcionalidade: 'desempenho-anual' },
+  { to: '/semana', label: 'Dias da Semana', icon: CalendarDays, funcionalidade: 'analise-dia-semana' },
+  { to: '/metas', label: 'Metas', icon: Target, funcionalidade: 'metas-mensais' },
+  { to: '/gratuidade', label: 'Gratuidade', icon: Zap, funcionalidade: 'analise-tolerancia' },
+  { to: '/previsao', label: 'Previsão', icon: TrendingUp, funcionalidade: 'previsao' },
 ];
 
 interface SidebarProps {
@@ -21,6 +22,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
+  const { temAcesso } = usePlano();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
 
@@ -70,25 +72,31 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               Painel
             </p>
             <ul className="space-y-1">
-              {dashboardItems.map(({ to, label, icon: Icon }) => (
-                <li key={to}>
-                  <NavLink
-                    to={to}
-                    end={to === '/'}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-                      }`
-                    }
-                  >
-                    <Icon size={18} />
-                    {label}
-                  </NavLink>
-                </li>
-              ))}
+              {dashboardItems.map(({ to, label, icon: Icon, funcionalidade }) => {
+                const liberado = temAcesso(funcionalidade);
+                return (
+                  <li key={to}>
+                    <NavLink
+                      to={liberado ? to : '#'}
+                      end={to === '/'}
+                      onClick={e => { if (!liberado) e.preventDefault(); else onClose(); }}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          !liberado
+                            ? 'text-slate-600 cursor-not-allowed'
+                            : isActive
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`
+                      }
+                    >
+                      <Icon size={18} />
+                      <span className="flex-1">{label}</span>
+                      {!liberado && <Lock size={12} className="text-slate-600 flex-shrink-0" />}
+                    </NavLink>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -147,6 +155,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {isSuperAdmin && (
                   <li>
                     <NavLink
+                      to="/admin/planos"
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'bg-blue-600 text-white'
+                            : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                        }`
+                      }
+                    >
+                      <CreditCard size={18} />
+                      Planos
+                    </NavLink>
+                  </li>
+                )}
+                {isSuperAdmin && (
+                  <li>
+                    <NavLink
                       to="/admin/instituicoes"
                       onClick={onClose}
                       className={({ isActive }) =>
@@ -189,6 +215,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="mb-3">
               <p className="text-slate-300 text-xs font-semibold truncate">{user.nome}</p>
               <p className="text-slate-500 text-xs truncate">{user.email}</p>
+              {user.plano && (
+                <span className="inline-block mt-1 px-2 py-0.5 bg-slate-700 text-slate-300 text-xs rounded-full">
+                  {user.plano}
+                </span>
+              )}
             </div>
           )}
           <button

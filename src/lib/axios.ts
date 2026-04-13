@@ -39,6 +39,9 @@ api.interceptors.response.use(
       localStorage.removeItem('auth');
       window.location.href = '/login';
     }
+    if (error.response?.status === 403 && error.response?.data?.erro === 'PLANO_NAO_PERMITIDO') {
+      return Promise.reject(new Error(error.response.data.mensagem ?? 'Funcionalidade não disponível no seu plano atual.'));
+    }
     return Promise.reject(error);
   }
 );

@@ -22,6 +22,7 @@ import RankingPage from './pages/Ranking';
 import GratuidadePage from './pages/Gratuidade';
 import PrevisaoPage from './pages/Previsao';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
+import PlanoGestaoPage from './pages/admin/PlanoGestao';
 
 function InstituicaoSelector() {
   const { instituicoes, selectedId, setSelectedId } = useInstituicao();
@@ -105,6 +106,7 @@ function AppLayout() {
             <Route path="/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
             <Route path="/gratuidade" element={<ProtectedRoute><GratuidadePage /></ProtectedRoute>} />
             <Route path="/previsao" element={<ProtectedRoute><PrevisaoPage /></ProtectedRoute>} />
+            <Route path="/admin/planos" element={<ProtectedRoute><PlanoGestaoPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

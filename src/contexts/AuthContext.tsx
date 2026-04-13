@@ -8,6 +8,8 @@ export interface AuthUser {
   role: string;
   instituicaoId: number;
   token: string;
+  plano: string;
+  funcionalidades: string[];
 }
 
 interface AuthContextValue {
@@ -50,6 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: string;
       instituicao_id: number;
       expiracao_ms: number;
+      plano: string;
+      funcionalidades: string[];
     }>('/api/auth/login', { email, senha });
 
     const authUser: AuthUser = {
@@ -58,6 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.role,
       instituicaoId: data.instituicao_id,
       token: data.token,
+      plano: data.plano ?? 'ESSENCIAL',
+      funcionalidades: data.funcionalidades ?? [],
     };
 
     localStorage.setItem('token', data.token);

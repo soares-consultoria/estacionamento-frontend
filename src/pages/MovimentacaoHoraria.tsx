@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FeatureGate } from '../components/FeatureGate';
 import {
   Area,
   AreaChart,
@@ -70,6 +71,7 @@ export default function MovimentacaoHorariaPage() {
   const isEmpty = visao === 'categoria' ? rows.length === 0 : veicRows.length === 0;
 
   return (
+    <FeatureGate funcionalidade="movimentacao-horaria">
     <div className="h-full overflow-y-auto">
       <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
@@ -311,5 +313,6 @@ export default function MovimentacaoHorariaPage() {
         )}
       </div>
     </div>
+    </FeatureGate>
   );
 }
