@@ -17,14 +17,14 @@ export const InstituicaoContext = createContext<InstituicaoContextValue>({
 
 export function InstituicaoProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const canSelectInstituicao = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
 
   const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
   const stored = localStorage.getItem('selectedInstituicaoId');
   const [selectedId, setSelectedIdState] = useState<number | null>(stored ? Number(stored) : null);
 
   useEffect(() => {
-    if (!isSuperAdmin) return;
+    if (!canSelectInstituicao) return;
     adminApi.listInstituicoes().then(list => {
       const ativas = list.filter(i => i.ativo);
       setInstituicoes(ativas);
@@ -32,7 +32,7 @@ export function InstituicaoProvider({ children }: { children: ReactNode }) {
         setSelectedIdState(ativas[0].id);
       }
     });
-  }, [isSuperAdmin]);
+  }, [canSelectInstituicao]);
 
   const setSelectedId = useCallback((id: number) => {
     setSelectedIdState(id);

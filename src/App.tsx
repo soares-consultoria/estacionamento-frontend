@@ -23,6 +23,7 @@ import GratuidadePage from './pages/Gratuidade';
 import PrevisaoPage from './pages/Previsao';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
 import PlanoGestaoPage from './pages/admin/PlanoGestao';
+import ContasPage from './pages/admin/Contas';
 
 function InstituicaoSelector() {
   const { instituicoes, selectedId, setSelectedId } = useInstituicao();
@@ -47,7 +48,7 @@ function InstituicaoSelector() {
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
   const { selectedId } = useInstituicao();
 
   return (
@@ -107,6 +108,7 @@ function AppLayout() {
             <Route path="/gratuidade" element={<ProtectedRoute><GratuidadePage /></ProtectedRoute>} />
             <Route path="/previsao" element={<ProtectedRoute><PrevisaoPage /></ProtectedRoute>} />
             <Route path="/admin/planos" element={<ProtectedRoute><PlanoGestaoPage /></ProtectedRoute>} />
+            <Route path="/admin/contas" element={<ProtectedRoute><ContasPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

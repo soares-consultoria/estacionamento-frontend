@@ -7,7 +7,7 @@ export function usePlano() {
   const funcionalidades = user?.funcionalidades ?? [];
 
   const temAcesso = (codigoFuncionalidade: string): boolean => {
-    if (user?.role === 'SUPER_ADMIN') return true;
+    if (user?.role === 'SISTEMA_ADMIN' || user?.role === 'SUPER_ADMIN') return true;
     return funcionalidades.includes(codigoFuncionalidade);
   };
 

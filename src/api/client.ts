@@ -259,12 +259,58 @@ export interface MetaMensal {
   pct_receita: number | null;
 }
 
+export interface ContaResumo {
+  id: number;
+  nome: string;
+  plano: string;
+  planoPendente: string | null;
+  maxInstituicoes: number;
+  maxUsuariosPorInstituicao: number;
+  dataInicioPlano: string;
+  dataVencimento: string;
+  ciclo: string;
+  ativo: boolean;
+  qtdInstituicoes: number;
+}
+
+export interface HistoricoPlanoItem {
+  id: number;
+  planoAnterior: string;
+  planoNovo: string;
+  motivo: string;
+  dataAlteracao: string;
+  alteradoPor: string | null;
+  valorCobrado: number | null;
+}
+
+export const contaApi = {
+  listar: () =>
+    api.get<ContaResumo[]>('/api/admin/contas').then(r => r.data),
+
+  buscar: (id: number) =>
+    api.get<ContaResumo>(`/api/admin/contas/${id}`).then(r => r.data),
+
+  criar: (nome: string, plano: string) =>
+    api.post<ContaResumo>('/api/admin/contas', { nome, plano }).then(r => r.data),
+
+  alterarPlano: (id: number, plano: string, valorCobrado?: number) =>
+    api.put<ContaResumo>(`/api/admin/contas/${id}/plano`, { plano, valorCobrado }).then(r => r.data),
+
+  historico: (id: number) =>
+    api.get<HistoricoPlanoItem[]>(`/api/admin/contas/${id}/historico`).then(r => r.data),
+
+  listarInstituicoes: (id: number) =>
+    api.get<{ id: number; nome: string; cnpj: string | null; ativo: boolean }[]>(
+      `/api/admin/contas/${id}/instituicoes`
+    ).then(r => r.data),
+};
+
 export interface InstituicaoPlanoAdmin {
   id: number;
   nome: string;
   cnpj: string | null;
   plano: string;
-  maxUsuarios: number;
+  maxUsuariosPorInstituicao: number;
   ativo: boolean;
 }
 

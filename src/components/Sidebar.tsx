@@ -1,4 +1,4 @@
-import { BarChart2, Building2, CalendarDays, Car, Clock, CreditCard, GitCompare, Home, Lock, LogOut, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
+import { BarChart2, Building2, CalendarDays, Car, Clock, GitCompare, Home, Lock, LogOut, Server, Shield, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { usePlano } from '../hooks/usePlano';
@@ -23,8 +23,9 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const { temAcesso } = usePlano();
+  const isSistemaAdmin = user?.role === 'SISTEMA_ADMIN';
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
+  const isAdmin = user?.role === 'ADMIN' || isSuperAdmin || isSistemaAdmin;
 
   return (
     <>
@@ -127,8 +128,83 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           )}
 
-          {/* Administração */}
-          {isAdmin && (
+          {/* Sistema — somente SISTEMA_ADMIN */}
+          {isSistemaAdmin && (
+            <div>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                Sistema
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <NavLink
+                    to="/admin/contas"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Server size={18} />
+                    Contas / Planos
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/ranking"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Trophy size={18} />
+                    Ranking Global
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/admin/instituicoes"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Building2 size={18} />
+                    Todas as Instituições
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/admin/usuarios"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Users size={18} />
+                    Todos os Usuários
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {/* Administração — SUPER_ADMIN e ADMIN */}
+          {isAdmin && !isSistemaAdmin && (
             <div>
               <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
                 Administração
@@ -165,8 +241,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         }`
                       }
                     >
-                      <CreditCard size={18} />
-                      Planos
+                      <Shield size={18} />
+                      Meu Plano
                     </NavLink>
                   </li>
                 )}
@@ -215,7 +291,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="mb-3">
               <p className="text-slate-300 text-xs font-semibold truncate">{user.nome}</p>
               <p className="text-slate-500 text-xs truncate">{user.email}</p>
-              {user.plano && (
+              {isSistemaAdmin ? (
+                <span className="inline-block mt-1 px-2 py-0.5 bg-purple-700 text-purple-100 text-xs rounded-full">
+                  SISTEMA
+                </span>
+              ) : user.plano && (
                 <span className="inline-block mt-1 px-2 py-0.5 bg-slate-700 text-slate-300 text-xs rounded-full">
                   {user.plano}
                 </span>
