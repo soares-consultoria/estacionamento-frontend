@@ -180,8 +180,9 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
       credMotos: acc.credMotos + (d.cred_motos ?? 0),
       mensCarros: acc.mensCarros + (d.mens_carros ?? 0),
       mensMotos: acc.mensMotos + (d.mens_motos ?? 0),
+      outros: acc.outros + (d.rot_terceiros ?? 0) + (d.rot_cdeb ?? 0),
     }),
-    { carros: 0, motos: 0, caminhoes: 0, total: 0, rotCarros: 0, rotMotos: 0, credCarros: 0, credMotos: 0, mensCarros: 0, mensMotos: 0 },
+    { carros: 0, motos: 0, caminhoes: 0, total: 0, rotCarros: 0, rotMotos: 0, credCarros: 0, credMotos: 0, mensCarros: 0, mensMotos: 0, outros: 0 },
   );
 
   const kpiCards = [
@@ -206,6 +207,13 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
       bar: 'bg-amber-500',
       pct: Number(PCT(totals.caminhoes, totals.total)),
     },
+    ...(totals.outros > 0 ? [{
+      label: 'Outros',
+      value: totals.outros,
+      color: 'bg-slate-50 border-slate-200 text-slate-600',
+      bar: 'bg-slate-400',
+      pct: Number(PCT(totals.outros, totals.total)),
+    }] : []),
     {
       label: 'Total',
       value: totals.total,
@@ -220,6 +228,7 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
     Carros: d.total_carros,
     Motos: d.total_motos,
     Caminhões: d.total_caminhoes,
+    ...(((d.rot_terceiros ?? 0) + (d.rot_cdeb ?? 0)) > 0 ? { Outros: (d.rot_terceiros ?? 0) + (d.rot_cdeb ?? 0) } : {}),
   }));
 
   return (
@@ -298,7 +307,8 @@ function VeiculoView({ data, mes, ano }: { data: FluxoDiarioVeiculo[]; mes: numb
             <Legend />
             <Bar dataKey="Carros" stackId="a" fill="#3b82f6" />
             <Bar dataKey="Motos" stackId="a" fill="#10b981" />
-            <Bar dataKey="Caminhões" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Caminhões" stackId="a" fill="#f59e0b" />
+            <Bar dataKey="Outros" stackId="a" fill="#94a3b8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -434,22 +444,24 @@ export default function FluxoVeiculos() {
                 Por Tipo
               </button>
             </div>
-            <select
-              className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 bg-white"
-              value={mes}
-              onChange={(e) => setMes(Number(e.target.value))}
-            >
-              {MESES.slice(1).map((m, i) => (
-                <option key={i + 1} value={i + 1}>{m}</option>
-              ))}
-            </select>
-            <select
-              className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 bg-white"
-              value={ano}
-              onChange={(e) => setAno(Number(e.target.value))}
-            >
-              {[2024, 2025, 2026].map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <div className="flex gap-2 items-center">
+              <select
+                className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 bg-white"
+                value={mes}
+                onChange={(e) => setMes(Number(e.target.value))}
+              >
+                {MESES.slice(1).map((m, i) => (
+                  <option key={i + 1} value={i + 1}>{m}</option>
+                ))}
+              </select>
+              <select
+                className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 bg-white"
+                value={ano}
+                onChange={(e) => setAno(Number(e.target.value))}
+              >
+                {[2024, 2025, 2026].map((a) => <option key={a} value={a}>{a}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 

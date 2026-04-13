@@ -71,11 +71,16 @@ export default function Gratuidade() {
       .finally(() => setLoading(false));
   }, [ano, mes]);
 
+  const totalCredenciado = dados?.detalhe.reduce((sum, d) => sum + (d.credenciado ?? 0), 0) ?? 0;
+  const totalMensalista = dados?.detalhe.reduce((sum, d) => sum + (d.mensalista ?? 0), 0) ?? 0;
+
   const pieData = dados
     ? [
         { name: 'Pagantes', value: dados.total_pagantes },
         { name: 'Tolerância', value: dados.total_tolerancia },
-      ]
+        { name: 'Credenciado', value: totalCredenciado },
+        { name: 'Mensalista', value: totalMensalista },
+      ].filter(d => d.value > 0)
     : [];
 
   const barData = (dados?.detalhe ?? []).map(d => ({
@@ -139,7 +144,7 @@ export default function Gratuidade() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-5">
                 <h2 className="text-base font-semibold text-slate-700 mb-3">Distribuição do Fluxo</h2>
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -147,14 +152,14 @@ export default function Gratuidade() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={75}
-                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
+                      outerRadius={70}
                     >
                       {pieData.map((_, i) => (
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(v) => INT(v as number)} />
+                    <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

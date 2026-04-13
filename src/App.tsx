@@ -30,12 +30,12 @@ function InstituicaoSelector() {
   if (instituicoes.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200">
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 min-w-0">
       <Building2 size={14} className="text-slate-500 flex-shrink-0" />
       <select
         value={selectedId ?? ''}
         onChange={e => setSelectedId(Number(e.target.value))}
-        className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer max-w-[180px]"
+        className="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer min-w-0 max-w-[140px] sm:max-w-[200px]"
       >
         {instituicoes.map(i => (
           <option key={i.id} value={i.id}>{i.nome}</option>
@@ -67,16 +67,16 @@ function AppLayout() {
               <Menu size={22} />
             </button>
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center">
+              <div className="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center flex-shrink-0">
                 <BarChart2 size={15} className="text-white" />
               </div>
-              <span className="font-bold text-slate-800 text-sm">Gestão Estacionamento</span>
+              <span className="font-bold text-slate-800 text-sm hidden sm:inline whitespace-nowrap">Gestão Estacionamento</span>
             </div>
           </div>
 
           {isSuperAdmin && (
-            <div className="flex items-center gap-2 flex-1 justify-start lg:justify-start lg:ml-0">
-              <span className="hidden lg:inline text-xs text-slate-400 font-medium">Visualizando:</span>
+            <div className="flex items-center gap-2 flex-1 min-w-0 justify-start lg:justify-start lg:ml-0">
+              <span className="hidden lg:inline text-xs text-slate-400 font-medium whitespace-nowrap">Visualizando:</span>
               <InstituicaoSelector />
             </div>
           )}

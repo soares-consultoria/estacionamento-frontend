@@ -190,7 +190,7 @@ export default function MovimentacaoHorariaPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100">
               <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
                 <h2 className="text-base font-semibold text-slate-700">Detalhamento por Faixa Horária</h2>
               </div>
@@ -254,7 +254,7 @@ export default function MovimentacaoHorariaPage() {
             </div>
 
             {/* Detailed vehicle table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100">
               <div className="px-4 sm:px-5 py-4 border-b border-slate-100">
                 <h2 className="text-base font-semibold text-slate-700">Detalhamento por Tipo de Veículo</h2>
               </div>

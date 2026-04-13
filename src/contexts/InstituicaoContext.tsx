@@ -28,8 +28,13 @@ export function InstituicaoProvider({ children }: { children: ReactNode }) {
     adminApi.listInstituicoes().then(list => {
       const ativas = list.filter(i => i.ativo);
       setInstituicoes(ativas);
-      if (ativas.length > 0 && selectedId === null) {
-        setSelectedIdState(ativas[0].id);
+      if (ativas.length > 0) {
+        const isValid = selectedId !== null && ativas.some(i => i.id === selectedId);
+        if (!isValid) {
+          const fallback = ativas[0].id;
+          setSelectedIdState(fallback);
+          localStorage.setItem('selectedInstituicaoId', String(fallback));
+        }
       }
     });
   }, [canSelectInstituicao]);

@@ -290,7 +290,7 @@ export default function UsuariosPage() {
         {loading ? (
           <p className="text-slate-400 text-sm text-center py-8">Carregando...</p>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
             {usuarios.length === 0 ? (
               <p className="text-slate-400 text-sm text-center py-8">Nenhum usuário encontrado.</p>
             ) : (

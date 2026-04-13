@@ -105,7 +105,11 @@ export default function Overview() {
   const [tiposData, setTiposData] = useState<{ name: string; value: number }[]>([]);
   useEffect(() => {
     dashboardApi.getArrecadacaoPorTipo(ano, mes)
-      .then((data) => setTiposData(data.map((d) => ({ name: d.tipo_pagamento, value: Number(d.valor_total) }))))
+      .then((data) => setTiposData(
+        data
+          .filter((d) => d.tipo_pagamento !== 'ARRECADACAO')
+          .map((d) => ({ name: d.tipo_pagamento, value: Number(d.valor_total) }))
+      ))
       .catch(() => setTiposData([]));
   }, [ano, mes]);
 
@@ -237,8 +241,6 @@ export default function Overview() {
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
-                          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-                          labelLine
                         >
                           {tiposData.map((_, index) => (
                             <Cell key={index} fill={COLORS[index % COLORS.length]} />
