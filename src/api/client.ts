@@ -167,8 +167,10 @@ export const adminApi = {
   updateInstituicao: (id: number, data: { nome: string; cnpj?: string; ativo?: boolean }) =>
     api.put<Instituicao>(`/api/admin/instituicoes/${id}`, data).then(r => r.data),
 
-  listUsuarios: () =>
-    api.get<UsuarioAdmin[]>('/api/admin/usuarios').then(r => r.data),
+  listUsuarios: (page = 0, size = 50) =>
+    api.get<{ content: UsuarioAdmin[]; total_elements: number; total_pages: number; number: number }>(
+      `/api/admin/usuarios?page=${page}&size=${size}&sort=nome,asc`
+    ).then(r => r.data),
 
   createUsuario: (data: { instituicao_id: number; nome: string; email: string; senha: string; role: Role }) =>
     api.post<UsuarioAdmin>('/api/admin/usuarios', data).then(r => r.data),

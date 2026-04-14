@@ -38,6 +38,10 @@ export default function UsuariosPage() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const [usuarios, setUsuarios] = useState<UsuarioAdmin[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
   const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,14 +54,16 @@ export default function UsuariosPage() {
 
   const [saving, setSaving] = useState(false);
 
-  async function load() {
+  async function load(p = page) {
     try {
       setLoading(true);
-      const [us, insts] = await Promise.all([
-        adminApi.listUsuarios(),
+      const [resp, insts] = await Promise.all([
+        adminApi.listUsuarios(p, PAGE_SIZE),
         isSuperAdmin ? adminApi.listInstituicoes() : Promise.resolve([]),
       ]);
-      setUsuarios(us);
+      setUsuarios(resp.content);
+      setTotalElements(resp.total_elements);
+      setTotalPages(resp.total_pages);
       setInstituicoes(insts);
     } catch (err) {
       setError(apiError(err, 'Erro ao carregar dados.'));
@@ -66,7 +72,7 @@ export default function UsuariosPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(page); }, [page]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -85,7 +91,7 @@ export default function UsuariosPage() {
       });
       setShowCreate(false);
       setCreateForm(emptyCreate);
-      await load();
+      await load(page);
     } catch (err) {
       setError(apiError(err, 'Erro ao criar usuário.'));
     } finally {
@@ -105,7 +111,7 @@ export default function UsuariosPage() {
     try {
       await adminApi.updateUsuario(editingUser.id, updateForm);
       setEditingUser(null);
-      await load();
+      await load(page);
     } catch (err) {
       setError(apiError(err, 'Erro ao atualizar usuário.'));
     } finally {
@@ -294,59 +300,84 @@ export default function UsuariosPage() {
             {usuarios.length === 0 ? (
               <p className="text-slate-400 text-sm text-center py-8">Nenhum usuário encontrado.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50">
-                      <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Nome</th>
-                      <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">E-mail</th>
-                      {isSuperAdmin && (
-                        <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Instituição</th>
-                      )}
-                      <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Perfil</th>
-                      <th className="text-center text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Ativo</th>
-                      <th className="px-5 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {usuarios.map(u => (
-                      <tr key={u.id} className="hover:bg-slate-50">
-                        <td className="px-5 py-3 font-medium text-slate-800">{u.nome}</td>
-                        <td className="px-5 py-3 text-slate-500">{u.email}</td>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50">
+                        <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Nome</th>
+                        <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">E-mail</th>
                         {isSuperAdmin && (
-                          <td className="px-5 py-3 text-slate-500">{u.nome_instituicao}</td>
+                          <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Instituição</th>
                         )}
-                        <td className="px-5 py-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            u.role === 'SUPER_ADMIN'
-                              ? 'bg-purple-100 text-purple-700'
-                              : u.role === 'ADMIN'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {ROLE_LABELS[u.role as Role] ?? u.role}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 text-center">
-                          {u.ativo
-                            ? <CheckCircle size={15} className="text-green-500 inline" />
-                            : <XCircle size={15} className="text-slate-400 inline" />
-                          }
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <button
-                            onClick={() => openEdit(u)}
-                            className="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded"
-                            title="Editar"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                        </td>
+                        <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Perfil</th>
+                        <th className="text-center text-xs font-semibold text-slate-500 uppercase tracking-wide px-5 py-3">Ativo</th>
+                        <th className="px-5 py-3" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {usuarios.map(u => (
+                        <tr key={u.id} className="hover:bg-slate-50">
+                          <td className="px-5 py-3 font-medium text-slate-800">{u.nome}</td>
+                          <td className="px-5 py-3 text-slate-500">{u.email}</td>
+                          {isSuperAdmin && (
+                            <td className="px-5 py-3 text-slate-500">{u.nome_instituicao}</td>
+                          )}
+                          <td className="px-5 py-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              u.role === 'SUPER_ADMIN'
+                                ? 'bg-purple-100 text-purple-700'
+                                : u.role === 'ADMIN'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {ROLE_LABELS[u.role as Role] ?? u.role}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            {u.ativo
+                              ? <CheckCircle size={15} className="text-green-500 inline" />
+                              : <XCircle size={15} className="text-slate-400 inline" />
+                            }
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <button
+                              onClick={() => openEdit(u)}
+                              className="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded"
+                              title="Editar"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginação */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 text-xs text-slate-500">
+                    <span>{totalElements} usuário{totalElements !== 1 ? 's' : ''} · página {page + 1} de {totalPages}</span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setPage(p => Math.max(0, p - 1))}
+                        disabled={page === 0}
+                        className="px-3 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        ← Anterior
+                      </button>
+                      <button
+                        onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                        disabled={page >= totalPages - 1}
+                        className="px-3 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Próxima →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
