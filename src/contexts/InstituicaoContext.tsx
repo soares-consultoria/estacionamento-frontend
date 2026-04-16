@@ -26,6 +26,7 @@ export function InstituicaoProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!canSelectInstituicao) return;
     adminApi.listInstituicoes().then(list => {
+      if (!Array.isArray(list)) return;
       const ativas = list.filter(i => i.ativo);
       setInstituicoes(ativas);
       if (ativas.length > 0) {
@@ -36,7 +37,7 @@ export function InstituicaoProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('selectedInstituicaoId', String(fallback));
         }
       }
-    });
+    }).catch(() => {});
   }, [canSelectInstituicao]);
 
   const setSelectedId = useCallback((id: number) => {
