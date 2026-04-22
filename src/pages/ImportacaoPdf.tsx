@@ -113,7 +113,7 @@ export default function ImportacaoPdfPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={e => { e.stopPropagation(); setFile(null); setResultado(null); setErro(null); }}
+                  onClick={e => { e.stopPropagation(); setFile(null); setJob(null); setErro(null); }}
                   className="ml-auto text-slate-400 hover:text-slate-600 p-1 rounded"
                 >
                   <XCircle size={18} />
