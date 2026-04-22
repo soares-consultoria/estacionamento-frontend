@@ -324,12 +324,23 @@ export const planoApi = {
     api.put<InstituicaoPlanoAdmin>(`/api/admin/planos/instituicao/${id}`, { plano }).then(r => r.data),
 };
 
+export type ImportacaoJob = {
+  id: number;
+  status: 'PENDENTE' | 'PROCESSANDO' | 'CONCLUIDO' | 'ERRO';
+  mensagem: string | null;
+  nomeArquivo: string | null;
+  instituicaoId: number | null;
+};
+
 export const importacaoApi = {
-  importarPdf: (file: File) => {
+  criarJob: (file: File) => {
     const form = new FormData();
     form.append('file', file);
-    return api.post<ProcessamentoResultado>('/api/importacao/pdf', form, {
+    return api.post<{ jobId: number; status: string }>('/api/importacao/jobs', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data);
   },
+
+  consultarJob: (jobId: number) =>
+    api.get<ImportacaoJob>(`/api/importacao/jobs/${jobId}`).then(r => r.data),
 };
