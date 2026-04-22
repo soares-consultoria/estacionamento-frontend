@@ -1,11 +1,17 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useContext, useRef, useState } from 'react';
 import { AlertTriangle, CheckCircle2, FileUp, Loader2, UploadCloud, XCircle } from 'lucide-react';
 import { importacaoApi, type ImportacaoJob } from '../api/client';
+import { InstituicaoContext } from '../contexts/InstituicaoContext';
+import { useAuth } from '../hooks/useAuth';
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 60; // 3 min máx
 
 export default function ImportacaoPdfPage() {
+  const { user } = useAuth();
+  const { selectedId } = useContext(InstituicaoContext);
+  const needsInstituicao = user?.role === 'SISTEMA_ADMIN' || user?.role === 'SUPER_ADMIN';
+
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,7 +52,7 @@ export default function ImportacaoPdfPage() {
     setLoadingMsg('Enviando arquivo...');
 
     try {
-      const { jobId } = await importacaoApi.criarJob(file);
+      const { jobId } = await importacaoApi.criarJob(file, needsInstituicao ? selectedId : undefined);
       setLoadingMsg('Processando com IA...');
       setFile(null);
 
@@ -137,9 +143,16 @@ export default function ImportacaoPdfPage() {
             </div>
           )}
 
+          {needsInstituicao && !selectedId && (
+            <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg px-4 py-3 text-sm">
+              <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
+              <span>Aguardando seleção de instituição...</span>
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={!file || loading}
+            disabled={!file || loading || (needsInstituicao && !selectedId)}
             className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg text-sm transition-colors"
           >
             {loading ? (

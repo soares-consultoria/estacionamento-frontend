@@ -6,7 +6,7 @@ const api = axios.create({
   baseURL: BASE_URL,
 });
 
-// Injeta instituicaoId para SUPER_ADMIN em chamadas ao dashboard e importação
+// Injeta instituicaoId para SUPER_ADMIN e SISTEMA_ADMIN em chamadas ao dashboard e importação
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -17,7 +17,7 @@ api.interceptors.request.use((config) => {
   if (auth) {
     try {
       const user = JSON.parse(auth) as { role: string };
-      if (user.role === 'SUPER_ADMIN') {
+      if (user.role === 'SUPER_ADMIN' || user.role === 'SISTEMA_ADMIN') {
         const selectedId = localStorage.getItem('selectedInstituicaoId');
         if (selectedId && config.url && (config.url.includes('/api/dashboard') || config.url.includes('/api/importacao'))) {
           config.params = { ...config.params, instituicaoId: selectedId };
