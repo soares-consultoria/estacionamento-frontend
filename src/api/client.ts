@@ -332,6 +332,36 @@ export type ImportacaoJob = {
   instituicaoId: number | null;
 };
 
+export type TipoRelatorio = 'FINANCEIRO_ESTATISTICO' | 'EST_MOVIMENTACAO';
+
+export type ArquivoProcessadoStatus =
+  | 'PENDENTE' | 'TEXTO_EXTRAIDO' | 'IA_PROCESSADA' | 'PROCESSANDO'
+  | 'PROCESSADO' | 'PROCESSADO_COM_AVISOS' | 'ERRO_VALIDACAO' | 'ERRO_PROCESSAMENTO';
+
+export interface ArquivoUploadItem {
+  id: number;
+  nomeArquivo: string;
+  tipoRelatorio: TipoRelatorio | null;
+  statusProcessamento: ArquivoProcessadoStatus;
+  criadoEm: string;
+  finalizadoEm: string | null;
+}
+
+export interface DiaUpload {
+  dataReferencia: string;
+  statusDia: 'COMPLETO' | 'PENDENTE';
+  arquivos: ArquivoUploadItem[];
+}
+
+export interface HistoricoUpload {
+  resumo: {
+    totalDias: number;
+    diasCompletos: number;
+    diasPendentes: number;
+  };
+  dias: DiaUpload[];
+}
+
 export const importacaoApi = {
   criarJob: (file: File, instituicaoId?: number | null) => {
     const form = new FormData();
@@ -344,4 +374,9 @@ export const importacaoApi = {
 
   consultarJob: (jobId: number) =>
     api.get<ImportacaoJob>(`/api/importacao/jobs/${jobId}`).then(r => r.data),
+
+  historico: (ano: number, mes: number, instituicaoId?: number | null) =>
+    api.get<HistoricoUpload>('/api/importacao/historico', {
+      params: { ano, mes, ...(instituicaoId ? { instituicaoId } : {}) },
+    }).then(r => r.data),
 };

@@ -15,6 +15,7 @@ import Overview from './pages/Overview';
 import InstituicoesPage from './pages/admin/Instituicoes';
 import UsuariosPage from './pages/admin/Usuarios';
 import ImportacaoPdfPage from './pages/ImportacaoPdf';
+import HistoricoUploadPage from './pages/HistoricoUpload';
 import ComparativoPage from './pages/Comparativo';
 import AnaliseSemanaPage from './pages/AnaliseSemana';
 import MetasPage from './pages/Metas';
@@ -101,6 +102,7 @@ function AppLayout() {
             <Route path="/admin/instituicoes" element={<ProtectedRoute><InstituicoesPage /></ProtectedRoute>} />
             <Route path="/admin/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
             <Route path="/importacao" element={<ProtectedRoute><ImportacaoPdfPage /></ProtectedRoute>} />
+            <Route path="/importacao/historico" element={<ProtectedRoute><HistoricoUploadPage /></ProtectedRoute>} />
             <Route path="/comparativo" element={<ProtectedRoute><ComparativoPage /></ProtectedRoute>} />
             <Route path="/semana" element={<ProtectedRoute><AnaliseSemanaPage /></ProtectedRoute>} />
             <Route path="/metas" element={<ProtectedRoute><MetasPage /></ProtectedRoute>} />
