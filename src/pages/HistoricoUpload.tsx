@@ -54,7 +54,7 @@ export default function HistoricoUploadPage() {
       setHistorico(data);
       // Expande automaticamente dias pendentes
       const pendentes = new Set(
-        data.dias.filter(d => d.statusDia === 'PENDENTE').map(d => d.dataReferencia),
+        data.dias.filter(d => d.status_dia === 'PENDENTE').map(d => d.data_referencia),
       );
       setExpandidos(pendentes);
     } catch {
@@ -158,9 +158,9 @@ export default function HistoricoUploadPage() {
           <div className="space-y-4">
             {/* Cards de resumo */}
             <div className="grid grid-cols-3 gap-3">
-              <ResumoCard label="Dias com dados" value={historico.resumo.totalDias} color="slate" />
-              <ResumoCard label="Completos" value={historico.resumo.diasCompletos} color="green" />
-              <ResumoCard label="Pendentes" value={historico.resumo.diasPendentes} color="amber" />
+              <ResumoCard label="Dias com dados" value={historico.resumo.total_dias} color="slate" />
+              <ResumoCard label="Completos" value={historico.resumo.dias_completos} color="green" />
+              <ResumoCard label="Pendentes" value={historico.resumo.dias_pendentes} color="amber" />
             </div>
 
             {/* Lista de dias */}
@@ -173,10 +173,10 @@ export default function HistoricoUploadPage() {
               <div className="space-y-2">
                 {historico.dias.map(dia => (
                   <DiaCard
-                    key={dia.dataReferencia}
+                    key={dia.data_referencia}
                     dia={dia}
-                    expandido={expandidos.has(dia.dataReferencia)}
-                    onToggle={() => toggleDia(dia.dataReferencia)}
+                    expandido={expandidos.has(dia.data_referencia)}
+                    onToggle={() => toggleDia(dia.data_referencia)}
                   />
                 ))}
               </div>
@@ -215,11 +215,11 @@ function ResumoCard({ label, value, color }: {
 function DiaCard({ dia, expandido, onToggle }: {
   dia: DiaUpload; expandido: boolean; onToggle: () => void;
 }) {
-  const isCompleto = dia.statusDia === 'COMPLETO';
+  const isCompleto = dia.status_dia === 'COMPLETO';
 
-  const [datePart] = dia.dataReferencia.split('T');
+  const [datePart] = (dia.data_referencia ?? '').split('T');
   const [anoStr, mesStr, diaStr] = datePart.split('-');
-  const dataFormatada = `${diaStr}/${mesStr}/${anoStr}`;
+  const dataFormatada = diaStr ? `${diaStr}/${mesStr}/${anoStr}` : dia.data_referencia;
 
   return (
     <div className={[
@@ -261,15 +261,15 @@ function DiaCard({ dia, expandido, onToggle }: {
             <div key={arq.id} className="flex items-start gap-3 px-4 py-3">
               <FileText size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-700 truncate">{arq.nomeArquivo}</p>
+                <p className="text-sm font-medium text-slate-700 truncate">{arq.nome_arquivo}</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {arq.tipoRelatorio ? TIPO_LABEL[arq.tipoRelatorio] ?? arq.tipoRelatorio : '—'}
+                  {arq.tipo_relatorio ? TIPO_LABEL[arq.tipo_relatorio] ?? arq.tipo_relatorio : '—'}
                 </p>
               </div>
               <div className="text-right flex-shrink-0">
-                <StatusBadge status={arq.statusProcessamento} />
+                <StatusBadge status={arq.status_processamento} />
                 <p className="text-xs text-slate-400 mt-1">
-                  {new Date(arq.criadoEm).toLocaleString('pt-BR', {
+                  {new Date(arq.criado_em).toLocaleString('pt-BR', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit',
                   })}
@@ -279,11 +279,11 @@ function DiaCard({ dia, expandido, onToggle }: {
           ))}
 
           {/* Faltando RFE */}
-          {!dia.arquivos.some(a => a.tipoRelatorio === 'FINANCEIRO_ESTATISTICO') && (
+          {!dia.arquivos.some(a => a.tipo_relatorio === 'FINANCEIRO_ESTATISTICO') && (
             <ArquivoFaltando tipo="Financeiro Estatístico (RFE)" />
           )}
           {/* Faltando REM */}
-          {!dia.arquivos.some(a => a.tipoRelatorio === 'EST_MOVIMENTACAO') && (
+          {!dia.arquivos.some(a => a.tipo_relatorio === 'EST_MOVIMENTACAO') && (
             <ArquivoFaltando tipo="Estatístico por Movimentação (REM)" />
           )}
         </div>

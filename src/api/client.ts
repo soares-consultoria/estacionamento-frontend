@@ -340,24 +340,24 @@ export type ArquivoProcessadoStatus =
 
 export interface ArquivoUploadItem {
   id: number;
-  nomeArquivo: string;
-  tipoRelatorio: TipoRelatorio | null;
-  statusProcessamento: ArquivoProcessadoStatus;
-  criadoEm: string;
-  finalizadoEm: string | null;
+  nome_arquivo: string;
+  tipo_relatorio: TipoRelatorio | null;
+  status_processamento: ArquivoProcessadoStatus;
+  criado_em: string;
+  finalizado_em: string | null;
 }
 
 export interface DiaUpload {
-  dataReferencia: string;
-  statusDia: 'COMPLETO' | 'PENDENTE';
+  data_referencia: string;
+  status_dia: 'COMPLETO' | 'PENDENTE';
   arquivos: ArquivoUploadItem[];
 }
 
 export interface HistoricoUpload {
   resumo: {
-    totalDias: number;
-    diasCompletos: number;
-    diasPendentes: number;
+    total_dias: number;
+    dias_completos: number;
+    dias_pendentes: number;
   };
   dias: DiaUpload[];
 }
