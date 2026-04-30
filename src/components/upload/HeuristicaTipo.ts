@@ -11,10 +11,12 @@ export type TipoRelatorioHint = 'FINANCEIRO_ESTATISTICO' | 'EST_MOVIMENTACAO' | 
 export function inferirTipo(nomeArquivo: string): TipoRelatorioHint {
   const nome = nomeArquivo.toUpperCase();
 
-  if (/\bRFE\b/.test(nome) || nome.includes('FINANCEIRO')) {
+  // (?<![A-Z]) / (?![A-Z]) — não usa \b pois _ é considerado "palavra"
+  // em JS, então "RFE_2024" falharia com \bRFE\b
+  if (/(?<![A-Z])RFE(?![A-Z])/.test(nome) || nome.includes('FINANCEIRO')) {
     return 'FINANCEIRO_ESTATISTICO';
   }
-  if (/\bREM\b/.test(nome) || nome.includes('MOVIMENTAC')) {
+  if (/(?<![A-Z])REM(?![A-Z])/.test(nome) || nome.includes('MOVIMENTAC')) {
     return 'EST_MOVIMENTACAO';
   }
   return null;
