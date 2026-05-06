@@ -23,6 +23,7 @@ import RankingPage from './pages/Ranking';
 import GratuidadePage from './pages/Gratuidade';
 import PrevisaoPage from './pages/Previsao';
 import EsqueciSenhaPage from './pages/EsqueciSenha';
+import ResetSenhaPage from './pages/ResetSenha';
 import PlanoGestaoPage from './pages/admin/PlanoGestao';
 import ContasPage from './pages/admin/Contas';
 
@@ -126,6 +127,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
+            <Route path="/reset-senha" element={<ResetSenhaPage />} />
             <Route path="/*" element={<AppLayout />} />
           </Routes>
         </InstituicaoProvider>
