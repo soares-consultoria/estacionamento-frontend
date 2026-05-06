@@ -3,9 +3,14 @@
  *
  * HEAD /api/importacao/hash/{sha256}?instituicaoId=
  *   200 → duplicata (arquivo já processado com sucesso) — NÃO enviar
- *   404 → novo, pode fazer upload
+ *   204 → novo, pode fazer upload
  *   400 → hash inválido
  *   outros → erro de rede / servidor
+ *
+ * NOTA: não usamos 404 porque o CloudFront está configurado com
+ * CustomErrorResponse 404→200+index.html (necessário para o React SPA).
+ * O backend retorna 204 (No Content) para "não encontrado" — o CloudFront
+ * não intercepta respostas 2xx.
  */
 import api from '../lib/axios';
 
@@ -16,20 +21,13 @@ export async function checkHash(
   instituicaoId?: number | null,
 ): Promise<HashCheckResult> {
   try {
-    await api.head(`/api/importacao/hash/${sha256}`, {
+    const response = await api.head(`/api/importacao/hash/${sha256}`, {
       params: instituicaoId ? { instituicaoId } : undefined,
     });
-    // 200 OK → duplicata
-    return 'duplicate';
-  } catch (err: unknown) {
-    if (isAxiosError(err)) {
-      if (err.response?.status === 404) return 'new';
-      // 400 ou outros → tratar como erro para não bloquear o usuário silenciosamente
-    }
+    // 200 → duplicata | 204 → arquivo novo
+    return response.status === 200 ? 'duplicate' : 'new';
+  } catch {
+    // Erros de rede, 401, 400, etc → não bloquear o usuário
     return 'error';
   }
-}
-
-function isAxiosError(err: unknown): err is { response?: { status: number } } {
-  return typeof err === 'object' && err !== null && 'response' in err;
 }
