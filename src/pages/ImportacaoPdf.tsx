@@ -146,6 +146,7 @@ function UploadSimplesPanel({
         file,
         needsInstituicao ? selectedId : undefined,
       );
+      if (jobId == null) throw new Error('Resposta inválida: job_id ausente');
       setLoadingMsg('Processando com IA...');
       setFile(null);
 

@@ -210,6 +210,7 @@ export default function UploadEmLote({ instituicaoId, onLoteConcluido }: Props) 
     patch(item.id, { status: 'uploading', progress: 50 });
     try {
       const { job_id: jobId } = await importacaoApi.criarJob(item.file, instituicaoId);
+      if (jobId == null) throw new Error('Resposta inválida: job_id ausente');
       patch(item.id, { progress: 70 });
       await pollJob(item.id, jobId);
       patch(item.id, { progress: 100 });
