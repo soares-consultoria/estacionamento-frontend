@@ -45,9 +45,9 @@ interface Props {
   onLoteConcluido?: () => void;
 }
 
-const CONCORRENCIA = 4;
-const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_TENTATIVAS = 30; // ~60 s
+const CONCORRENCIA = 2;          // reduzido para evitar rate limit da OpenAI
+const POLL_INTERVAL_MS = 3000;
+const POLL_MAX_TENTATIVAS = 100; // ~5 min (cobre retries de rate limit no backend)
 
 /* ─── Utilitários ─── */
 
