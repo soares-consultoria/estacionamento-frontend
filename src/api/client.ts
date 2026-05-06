@@ -366,10 +366,17 @@ export const importacaoApi = {
   criarJob: (file: File, instituicaoId?: number | null) => {
     const form = new FormData();
     form.append('file', file);
-    return api.post<{ job_id: number; status: string }>('/api/importacao/jobs', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    return api.post<{ job_id?: number; jobId?: number; status: string }>('/api/importacao/jobs', form, {
+      // Não definir Content-Type manualmente: o browser define automaticamente
+      // incluindo o boundary correto para multipart/form-data.
       params: instituicaoId ? { instituicaoId } : undefined,
-    }).then(r => r.data);
+    }).then(r => {
+      // Normaliza o ID independente de o backend retornar job_id ou jobId
+      // (comportamento do Jackson com Map<String,Object> varia por versão)
+      const raw = r.data as Record<string, unknown>;
+      const id = (raw['job_id'] ?? raw['jobId']) as number | undefined;
+      return { job_id: id, status: raw['status'] as string };
+    });
   },
 
   consultarJob: (jobId: number) =>
