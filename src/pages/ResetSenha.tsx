@@ -55,7 +55,7 @@ export default function ResetSenhaPage() {
     setLoading(true);
     setError(null);
     try {
-      await api.post('/api/auth/reset-senha', { token, novaSenha });
+      await api.post('/api/auth/reset-senha', { token, nova_senha: novaSenha });
       navigate('/login', { state: { resetOk: true } });
     } catch (err) {
       const e = err as AxiosError<{ mensagem?: string }>;
