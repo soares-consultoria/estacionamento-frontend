@@ -20,7 +20,7 @@ vi.mock('../api/importacaoHashApi', () => ({
 
 vi.mock('../api/client', () => ({
   importacaoApi: {
-    criarJob: vi.fn().mockResolvedValue({ jobId: 42, status: 'PENDENTE' }),
+    criarJob: vi.fn().mockResolvedValue({ job_id: 42, status: 'PENDENTE' }),
     consultarJob: vi.fn().mockResolvedValue({ id: 42, status: 'CONCLUIDO', mensagem: null, nomeArquivo: 'test.pdf', instituicaoId: 1 }),
   },
 }));

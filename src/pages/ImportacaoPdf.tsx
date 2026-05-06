@@ -142,7 +142,7 @@ function UploadSimplesPanel({
     setLoadingMsg('Enviando arquivo...');
 
     try {
-      const { jobId } = await importacaoApi.criarJob(
+      const { job_id: jobId } = await importacaoApi.criarJob(
         file,
         needsInstituicao ? selectedId : undefined,
       );

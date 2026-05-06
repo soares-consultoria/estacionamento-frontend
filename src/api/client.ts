@@ -366,7 +366,7 @@ export const importacaoApi = {
   criarJob: (file: File, instituicaoId?: number | null) => {
     const form = new FormData();
     form.append('file', file);
-    return api.post<{ jobId: number; status: string }>('/api/importacao/jobs', form, {
+    return api.post<{ job_id: number; status: string }>('/api/importacao/jobs', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
       params: instituicaoId ? { instituicaoId } : undefined,
     }).then(r => r.data);

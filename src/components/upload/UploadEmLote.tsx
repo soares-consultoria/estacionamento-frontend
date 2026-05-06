@@ -209,7 +209,7 @@ export default function UploadEmLote({ instituicaoId, onLoteConcluido }: Props) 
     // 3. Upload via POST /api/importacao/jobs
     patch(item.id, { status: 'uploading', progress: 50 });
     try {
-      const { jobId } = await importacaoApi.criarJob(item.file, instituicaoId);
+      const { job_id: jobId } = await importacaoApi.criarJob(item.file, instituicaoId);
       patch(item.id, { progress: 70 });
       await pollJob(item.id, jobId);
       patch(item.id, { progress: 100 });
