@@ -28,11 +28,11 @@ interface Props {
 
 export default function ResumoCards({ resumoA, resumoB, delta, labelA }: Props) {
   const cards = [
-    { title: 'Fluxo Total', valueB: INT(resumoB.fluxoTotal), valueA: INT(resumoA.fluxoTotal), deltaPct: delta.fluxoTotalPct },
-    { title: 'Média/hora', valueB: INT(resumoB.mediaPorHora), valueA: INT(resumoA.mediaPorHora), deltaPct: delta.mediaPorHoraPct },
-    { title: 'Hora Pico', valueB: resumoB.horaPico ?? '—', valueA: resumoA.horaPico ?? '—', deltaPct: null },
-    { title: 'Hora Vale', valueB: resumoB.horaVale ?? '—', valueA: resumoA.horaVale ?? '—', deltaPct: null },
-    { title: 'Crescimento Geral', valueB: BRL(resumoB.receita), valueA: BRL(resumoA.receita), deltaPct: delta.receitaPct },
+    { title: 'Fluxo Total', valueB: INT(resumoB.fluxo_total), valueA: INT(resumoA.fluxo_total), deltaPct: delta.fluxo_total_pct },
+    { title: 'Média/hora', valueB: INT(resumoB.media_por_hora), valueA: INT(resumoA.media_por_hora), deltaPct: delta.media_por_hora_pct },
+    { title: 'Hora Pico', valueB: resumoB.hora_pico ?? '—', valueA: resumoA.hora_pico ?? '—', deltaPct: null },
+    { title: 'Hora Vale', valueB: resumoB.hora_vale ?? '—', valueA: resumoA.hora_vale ?? '—', deltaPct: null },
+    { title: 'Crescimento Geral', valueB: BRL(resumoB.receita), valueA: BRL(resumoA.receita), deltaPct: delta.receita_pct },
   ];
 
   return (

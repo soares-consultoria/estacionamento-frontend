@@ -20,8 +20,8 @@ interface Props {
 }
 
 export default function TabelaHorariaComparativa({ dados, labelA, labelB }: Props) {
-  const totalA = dados.reduce((s, h) => s + h.valorA, 0);
-  const totalB = dados.reduce((s, h) => s + h.valorB, 0);
+  const totalA = dados.reduce((s, h) => s + h.valor_a, 0);
+  const totalB = dados.reduce((s, h) => s + h.valor_b, 0);
   const totalDelta = totalA > 0 ? ((totalB - totalA) / totalA) * 100 : null;
 
   return (
@@ -38,11 +38,11 @@ export default function TabelaHorariaComparativa({ dados, labelA, labelB }: Prop
         </thead>
         <tbody className="divide-y divide-slate-50">
           {dados.map((h, i) => (
-            <tr key={h.faixaHoraria} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-              <td className="px-4 py-2.5 font-medium text-slate-700">{h.faixaHoraria}</td>
-              <td className="px-4 py-2.5 text-right text-slate-700">{h.valorA > 0 ? INT(h.valorA) : '—'}</td>
-              <td className="px-4 py-2.5 text-right text-slate-700">{h.valorB > 0 ? INT(h.valorB) : '—'}</td>
-              <td className="px-4 py-2.5 text-right font-semibold"><Seta pct={h.deltaPct} /></td>
+            <tr key={h.faixa_horaria} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+              <td className="px-4 py-2.5 font-medium text-slate-700">{h.faixa_horaria}</td>
+              <td className="px-4 py-2.5 text-right text-slate-700">{h.valor_a > 0 ? INT(h.valor_a) : '—'}</td>
+              <td className="px-4 py-2.5 text-right text-slate-700">{h.valor_b > 0 ? INT(h.valor_b) : '—'}</td>
+              <td className="px-4 py-2.5 text-right font-semibold"><Seta pct={h.delta_pct} /></td>
             </tr>
           ))}
         </tbody>

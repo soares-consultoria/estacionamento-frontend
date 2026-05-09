@@ -19,12 +19,12 @@ export default function GraficoBarrasHora({ dados, labelA, labelB }: Props) {
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={dados} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="faixaHoraria" tick={{ fontSize: 10 }} tickLine={false} />
+          <XAxis dataKey="faixa_horaria" tick={{ fontSize: 10 }} tickLine={false} />
           <YAxis tickFormatter={INT} tick={{ fontSize: 11 }} width={55} />
           <Tooltip formatter={(v) => (typeof v === 'number' ? INT(v) : String(v ?? ''))} />
           <Legend />
-          <Bar dataKey="valorA" name={labelA} fill="#3b82f6" radius={[2, 2, 0, 0]} />
-          <Bar dataKey="valorB" name={labelB} fill="#f59e0b" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="valor_a" name={labelA} fill="#3b82f6" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="valor_b" name={labelB} fill="#f59e0b" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

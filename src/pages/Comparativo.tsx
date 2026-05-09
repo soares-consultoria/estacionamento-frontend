@@ -354,31 +354,31 @@ function ComparativoAvancado() {
           <ErrorBoundary>
             <>
               <ResumoCards
-                resumoA={dados.resumoA}
-                resumoB={dados.resumoB}
+                resumoA={dados.resumo_a}
+                resumoB={dados.resumo_b}
                 delta={dados.delta}
-                labelA={dados.periodoA?.label ?? ''}
-                labelB={dados.periodoB?.label ?? ''}
+                labelA={dados.periodo_a?.label ?? ''}
+                labelB={dados.periodo_b?.label ?? ''}
               />
 
               <GraficoLinhaComparativa
-                serieA={dados.serieA ?? []}
-                serieB={dados.serieB ?? []}
-                labelA={dados.periodoA?.label ?? ''}
-                labelB={dados.periodoB?.label ?? ''}
+                serieA={dados.serie_a ?? []}
+                serieB={dados.serie_b ?? []}
+                labelA={dados.periodo_a?.label ?? ''}
+                labelB={dados.periodo_b?.label ?? ''}
               />
 
-              {dados.granularidade === 'HORA' && (dados.porHora?.length ?? 0) > 0 && (
+              {dados.granularidade === 'HORA' && (dados.por_hora?.length ?? 0) > 0 && (
                 <>
                   <TabelaHorariaComparativa
-                    dados={dados.porHora}
-                    labelA={dados.periodoA?.label ?? ''}
-                    labelB={dados.periodoB?.label ?? ''}
+                    dados={dados.por_hora}
+                    labelA={dados.periodo_a?.label ?? ''}
+                    labelB={dados.periodo_b?.label ?? ''}
                   />
                   <GraficoBarrasHora
-                    dados={dados.porHora}
-                    labelA={dados.periodoA?.label ?? ''}
-                    labelB={dados.periodoB?.label ?? ''}
+                    dados={dados.por_hora}
+                    labelA={dados.periodo_a?.label ?? ''}
+                    labelB={dados.periodo_b?.label ?? ''}
                   />
                 </>
               )}
@@ -386,8 +386,8 @@ function ComparativoAvancado() {
               {(dados.heatmap?.length ?? 0) > 0 && (
                 <Heatmap
                   dados={dados.heatmap}
-                  labelA={dados.periodoA?.label ?? ''}
-                  labelB={dados.periodoB?.label ?? ''}
+                  labelA={dados.periodo_a?.label ?? ''}
+                  labelB={dados.periodo_b?.label ?? ''}
                 />
               )}
             </>

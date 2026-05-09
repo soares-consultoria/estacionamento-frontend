@@ -36,19 +36,19 @@ export default function Heatmap({ dados, labelA, labelB }: Props) {
   const [modo, setModo] = useState<Modo>('B');
 
   const faixas = useMemo(() => {
-    const s = new Set(dados.map(d => d.faixaHoraria));
+    const s = new Set(dados.map(d => d.faixa_horaria));
     return Array.from(s).sort();
   }, [dados]);
 
   const matriz = useMemo(() => {
     const m: Record<string, HeatmapItem> = {};
-    dados.forEach(d => { m[`${d.diaSemana}:${d.faixaHoraria}`] = d; });
+    dados.forEach(d => { m[`${d.dia_semana}:${d.faixa_horaria}`] = d; });
     return m;
   }, [dados]);
 
-  const maxA = useMemo(() => Math.max(...dados.map(d => d.valorA), 1), [dados]);
-  const maxB = useMemo(() => Math.max(...dados.map(d => d.valorB), 1), [dados]);
-  const maxDiff = useMemo(() => Math.max(...dados.map(d => Math.abs(d.valorB - d.valorA)), 1), [dados]);
+  const maxA = useMemo(() => Math.max(...dados.map(d => d.valor_a), 1), [dados]);
+  const maxB = useMemo(() => Math.max(...dados.map(d => d.valor_b), 1), [dados]);
+  const maxDiff = useMemo(() => Math.max(...dados.map(d => Math.abs(d.valor_b - d.valor_a)), 1), [dados]);
 
   const INT = (v: number) => new Intl.NumberFormat('pt-BR').format(v);
 
@@ -84,8 +84,8 @@ export default function Heatmap({ dados, labelA, labelB }: Props) {
                 <td className="text-right pr-1 text-slate-400 font-mono" style={{ fontSize: 10 }}>{faixa}</td>
                 {[1, 2, 3, 4, 5, 6, 7].map(dia => {
                   const cell = matriz[`${dia}:${faixa}`];
-                  const va = cell?.valorA ?? 0;
-                  const vb = cell?.valorB ?? 0;
+                  const va = cell?.valor_a ?? 0;
+                  const vb = cell?.valor_b ?? 0;
                   const diff = vb - va;
                   const bg = modo === 'A' ? corA(va, maxA) : modo === 'B' ? corB(vb, maxB) : corDiff(diff, maxDiff);
                   const valor = modo === 'A' ? va : modo === 'B' ? vb : diff;

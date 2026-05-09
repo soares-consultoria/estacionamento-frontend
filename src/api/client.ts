@@ -101,25 +101,25 @@ export interface PeriodoComparativo {
   inicio: string;
   fim: string;
   label: string;
-  diasComDados: number;
+  dias_com_dados: number;
 }
 
 export interface ResumoComparativo {
-  fluxoTotal: number;
-  mediaPorHora: number;
-  horaPico: string | null;
-  horaVale: string | null;
-  ticketMedio: number;
+  fluxo_total: number;
+  media_por_hora: number;
+  hora_pico: string | null;
+  hora_vale: string | null;
+  ticket_medio: number;
   receita: number;
   pagantes: number;
 }
 
 export interface DeltaResumo {
-  fluxoTotalPct: number | null;
-  mediaPorHoraPct: number | null;
-  ticketMedioPct: number | null;
-  receitaPct: number | null;
-  pagantesPct: number | null;
+  fluxo_total_pct: number | null;
+  media_por_hora_pct: number | null;
+  ticket_medio_pct: number | null;
+  receita_pct: number | null;
+  pagantes_pct: number | null;
 }
 
 export interface SerieTemporal {
@@ -129,28 +129,28 @@ export interface SerieTemporal {
 }
 
 export interface HoraComparativo {
-  faixaHoraria: string;
-  valorA: number;
-  valorB: number;
-  deltaPct: number | null;
+  faixa_horaria: string;
+  valor_a: number;
+  valor_b: number;
+  delta_pct: number | null;
 }
 
 export interface HeatmapItem {
-  diaSemana: number;
-  faixaHoraria: string;
-  valorA: number;
-  valorB: number;
+  dia_semana: number;
+  faixa_horaria: string;
+  valor_a: number;
+  valor_b: number;
 }
 
 export interface ComparativoPeriodos {
-  periodoA: PeriodoComparativo;
-  periodoB: PeriodoComparativo;
-  resumoA: ResumoComparativo;
-  resumoB: ResumoComparativo;
+  periodo_a: PeriodoComparativo;
+  periodo_b: PeriodoComparativo;
+  resumo_a: ResumoComparativo;
+  resumo_b: ResumoComparativo;
   delta: DeltaResumo;
-  serieA: SerieTemporal[];
-  serieB: SerieTemporal[];
-  porHora: HoraComparativo[];
+  serie_a: SerieTemporal[];
+  serie_b: SerieTemporal[];
+  por_hora: HoraComparativo[];
   heatmap: HeatmapItem[];
   granularidade: Granularidade;
 }
