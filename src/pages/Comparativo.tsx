@@ -10,6 +10,7 @@ import GraficoLinhaComparativa from '../components/comparativo/GraficoLinhaCompa
 import GraficoBarrasHora from '../components/comparativo/GraficoBarrasHora';
 import Heatmap from '../components/comparativo/Heatmap';
 import ExportarDropdown from '../components/comparativo/ExportarDropdown';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // ── Comparativo Legado (fallback para plano ESSENCIAL) ────────────────────────
 
@@ -350,45 +351,47 @@ function ComparativoAvancado() {
         {loading && <LoadingSpinner label="Comparando períodos..." />}
 
         {dados && !loading && (
-          <>
-            <ResumoCards
-              resumoA={dados.resumoA}
-              resumoB={dados.resumoB}
-              delta={dados.delta}
-              labelA={dados.periodoA.label}
-              labelB={dados.periodoB.label}
-            />
-
-            <GraficoLinhaComparativa
-              serieA={dados.serieA}
-              serieB={dados.serieB}
-              labelA={dados.periodoA.label}
-              labelB={dados.periodoB.label}
-            />
-
-            {dados.granularidade === 'HORA' && dados.porHora.length > 0 && (
-              <>
-                <TabelaHorariaComparativa
-                  dados={dados.porHora}
-                  labelA={dados.periodoA.label}
-                  labelB={dados.periodoB.label}
-                />
-                <GraficoBarrasHora
-                  dados={dados.porHora}
-                  labelA={dados.periodoA.label}
-                  labelB={dados.periodoB.label}
-                />
-              </>
-            )}
-
-            {dados.heatmap.length > 0 && (
-              <Heatmap
-                dados={dados.heatmap}
-                labelA={dados.periodoA.label}
-                labelB={dados.periodoB.label}
+          <ErrorBoundary>
+            <>
+              <ResumoCards
+                resumoA={dados.resumoA}
+                resumoB={dados.resumoB}
+                delta={dados.delta}
+                labelA={dados.periodoA?.label ?? ''}
+                labelB={dados.periodoB?.label ?? ''}
               />
-            )}
-          </>
+
+              <GraficoLinhaComparativa
+                serieA={dados.serieA ?? []}
+                serieB={dados.serieB ?? []}
+                labelA={dados.periodoA?.label ?? ''}
+                labelB={dados.periodoB?.label ?? ''}
+              />
+
+              {dados.granularidade === 'HORA' && (dados.porHora?.length ?? 0) > 0 && (
+                <>
+                  <TabelaHorariaComparativa
+                    dados={dados.porHora}
+                    labelA={dados.periodoA?.label ?? ''}
+                    labelB={dados.periodoB?.label ?? ''}
+                  />
+                  <GraficoBarrasHora
+                    dados={dados.porHora}
+                    labelA={dados.periodoA?.label ?? ''}
+                    labelB={dados.periodoB?.label ?? ''}
+                  />
+                </>
+              )}
+
+              {(dados.heatmap?.length ?? 0) > 0 && (
+                <Heatmap
+                  dados={dados.heatmap}
+                  labelA={dados.periodoA?.label ?? ''}
+                  labelB={dados.periodoB?.label ?? ''}
+                />
+              )}
+            </>
+          </ErrorBoundary>
         )}
       </div>
     </div>

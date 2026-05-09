@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { BarChart2, Building2, LogOut, Menu } from 'lucide-react';
 import { AuthProvider } from './contexts/AuthContext';
 import { InstituicaoProvider } from './contexts/InstituicaoContext';
@@ -121,17 +122,19 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <InstituicaoProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
-            <Route path="/reset-senha" element={<ResetSenhaPage />} />
-            <Route path="/*" element={<AppLayout />} />
-          </Routes>
-        </InstituicaoProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <InstituicaoProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
+              <Route path="/reset-senha" element={<ResetSenhaPage />} />
+              <Route path="/*" element={<AppLayout />} />
+            </Routes>
+          </InstituicaoProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
