@@ -67,7 +67,7 @@ export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props)
             dataKey="cumA"
             position="top"
             style={{ fontSize: 9, fill: G_LIGHT, fontWeight: 600 }}
-            formatter={(v: number | null) => (v != null ? INT(v) : '')}
+            formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
           />
         </Line>
         <Line
@@ -83,7 +83,7 @@ export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props)
             dataKey="cumB"
             position="bottom"
             style={{ fontSize: 9, fill: G_B, fontWeight: 600 }}
-            formatter={(v: number | null) => (v != null ? INT(v) : '')}
+            formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
           />
         </Line>
       </LineChart>

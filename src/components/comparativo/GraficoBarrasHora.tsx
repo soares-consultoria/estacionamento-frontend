@@ -64,11 +64,10 @@ export default function GraficoBarrasHora({ data }: Props) {
             dataKey="difPct"
             position="top"
             style={{ fontSize: 8, fontWeight: 600 }}
-            formatter={(v: number | null) =>
-              v != null
-                ? (v >= 0 ? '+' : '') + v.toFixed(2).replace('.', ',') + '%'
-                : ''
-            }
+            formatter={(v: unknown) => {
+              const n = typeof v === 'number' ? v : null;
+              return n != null ? (n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',') + '%' : '';
+            }}
           />
         </Bar>
       </BarChart>
