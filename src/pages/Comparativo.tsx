@@ -59,28 +59,33 @@ function ComparativoLegado() {
   useEffect(() => {
     const p = prevMonth(ano, mes);
     const aa = { ano: ano - 1, mes };
-    setCols([
-      { label: labelPeriodo(ano, mes), kpi: null, loading: true },
-      { label: labelPeriodo(p.ano, p.mes), kpi: null, loading: true },
-      { label: labelPeriodo(aa.ano, aa.mes), kpi: null, loading: true },
-    ]);
-    setError(null);
-    Promise.all([
-      dashboardApi.getKpiMensal(ano, mes),
-      dashboardApi.getKpiMensal(p.ano, p.mes),
-      dashboardApi.getKpiMensal(aa.ano, aa.mes),
-    ])
+    const loadingState = [
+      { label: labelPeriodo(ano, mes), kpi: null as KpiMensal | null, loading: true },
+      { label: labelPeriodo(p.ano, p.mes), kpi: null as KpiMensal | null, loading: true },
+      { label: labelPeriodo(aa.ano, aa.mes), kpi: null as KpiMensal | null, loading: true },
+    ];
+    let cancelled = false;
+    // Aplica loading state + reset error em microtask para evitar setState síncrono no efeito
+    Promise.resolve(loadingState)
+      .then(loading => { if (!cancelled) { setCols(loading); setError(null); } return Promise.all([
+        dashboardApi.getKpiMensal(ano, mes),
+        dashboardApi.getKpiMensal(p.ano, p.mes),
+        dashboardApi.getKpiMensal(aa.ano, aa.mes),
+      ]); })
       .then(([atual, anterior, anoAnt]) => {
-        setCols([
+        if (!cancelled) setCols([
           { label: labelPeriodo(ano, mes), kpi: atual, loading: false },
           { label: labelPeriodo(p.ano, p.mes), kpi: anterior, loading: false },
           { label: labelPeriodo(aa.ano, aa.mes), kpi: anoAnt, loading: false },
         ]);
       })
       .catch(e => {
-        setError(e.message);
-        setCols(c => c.map(col => ({ ...col, loading: false })));
+        if (!cancelled) {
+          setError(e.message);
+          setCols(c => c.map(col => ({ ...col, loading: false })));
+        }
       });
+    return () => { cancelled = true; };
   }, [ano, mes]);
 
   const atual = cols[0].kpi;
