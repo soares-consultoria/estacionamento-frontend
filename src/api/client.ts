@@ -93,6 +93,68 @@ export interface FluxoHorarioVeiculo {
   total_carros_sai: number; total_motos_sai: number; total_saidas: number;
 }
 
+/* ─── Comparativo Avançado ─── */
+
+export type Granularidade = 'HORA' | 'DIA' | 'SEMANA' | 'MES';
+
+export interface PeriodoComparativo {
+  inicio: string;
+  fim: string;
+  label: string;
+  diasComDados: number;
+}
+
+export interface ResumoComparativo {
+  fluxoTotal: number;
+  mediaPorHora: number;
+  horaPico: string | null;
+  horaVale: string | null;
+  ticketMedio: number;
+  receita: number;
+  pagantes: number;
+}
+
+export interface DeltaResumo {
+  fluxoTotalPct: number | null;
+  mediaPorHoraPct: number | null;
+  ticketMedioPct: number | null;
+  receitaPct: number | null;
+  pagantesPct: number | null;
+}
+
+export interface SerieTemporal {
+  chave: string;
+  valor: number;
+  label: string;
+}
+
+export interface HoraComparativo {
+  faixaHoraria: string;
+  valorA: number;
+  valorB: number;
+  deltaPct: number | null;
+}
+
+export interface HeatmapItem {
+  diaSemana: number;
+  faixaHoraria: string;
+  valorA: number;
+  valorB: number;
+}
+
+export interface ComparativoPeriodos {
+  periodoA: PeriodoComparativo;
+  periodoB: PeriodoComparativo;
+  resumoA: ResumoComparativo;
+  resumoB: ResumoComparativo;
+  delta: DeltaResumo;
+  serieA: SerieTemporal[];
+  serieB: SerieTemporal[];
+  porHora: HoraComparativo[];
+  heatmap: HeatmapItem[];
+  granularidade: Granularidade;
+}
+
 export const dashboardApi = {
   getKpiMensal: (ano: number, mes: number) =>
     fetchJson<KpiMensal>('/kpi-mensal', { ano, mes }),
@@ -135,6 +197,24 @@ export const dashboardApi = {
 
   salvarMeta: (data: { ano: number; mes: number; meta_fluxo?: number | null; meta_receita?: number | null }) =>
     api.post<MetaMensal>('/api/dashboard/meta', data).then(r => r.data),
+
+  comparativo: (params: {
+    inicioA: string; fimA: string;
+    inicioB: string; fimB: string;
+    granularidade?: Granularidade;
+  }, signal?: AbortSignal) =>
+    api.get<ComparativoPeriodos>('/api/dashboard/comparativo', { params, signal }).then(r => r.data),
+
+  exportarComparativo: (params: {
+    inicioA: string; fimA: string;
+    inicioB: string; fimB: string;
+    granularidade?: Granularidade;
+    formato: 'XLSX' | 'PDF' | 'CSV';
+  }) =>
+    api.get('/api/dashboard/comparativo/exportar', {
+      params,
+      responseType: 'blob',
+    }).then(r => r.data as Blob),
 };
 
 export interface Instituicao {
