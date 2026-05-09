@@ -72,7 +72,7 @@ export default function HistoricoUploadPage() {
   function toggleDia(data: string) {
     setExpandidos(prev => {
       const next = new Set(prev);
-      next.has(data) ? next.delete(data) : next.add(data);
+      if (next.has(data)) { next.delete(data); } else { next.add(data); }
       return next;
     });
   }
