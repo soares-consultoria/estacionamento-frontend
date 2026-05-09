@@ -1,32 +1,77 @@
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LabelList,
+  Cell,
 } from 'recharts';
-import type { HoraComparativo } from '../../api/client';
 
-const INT = (v: number) => new Intl.NumberFormat('pt-BR').format(v);
+const G_MED = '#10b981';
+const G_RED = '#ef4444';
 
-interface Props {
-  dados: HoraComparativo[];
-  labelA: string;
-  labelB: string;
+interface DifPctPoint {
+  hora: string;
+  difPct: number | null;
 }
 
-export default function GraficoBarrasHora({ dados, labelA, labelB }: Props) {
+interface Props {
+  data: DifPctPoint[];
+}
+
+export default function GraficoBarrasHora({ data }: Props) {
+  const filtrado = data.filter((d) => d.difPct != null);
+
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
-      <h3 className="text-sm font-semibold text-slate-700 mb-3">Fluxo por Hora</h3>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={dados} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="faixa_horaria" tick={{ fontSize: 10 }} tickLine={false} />
-          <YAxis tickFormatter={INT} tick={{ fontSize: 11 }} width={55} />
-          <Tooltip formatter={(v) => (typeof v === 'number' ? INT(v) : String(v ?? ''))} />
-          <Legend />
-          <Bar dataKey="valor_a" name={labelA} fill="#3b82f6" radius={[2, 2, 0, 0]} />
-          <Bar dataKey="valor_b" name={labelB} fill="#f59e0b" radius={[2, 2, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart
+        data={filtrado}
+        margin={{ top: 25, right: 10, left: 0, bottom: 5 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <XAxis
+          dataKey="hora"
+          tick={{ fontSize: 9 }}
+          tickLine={false}
+          axisLine={{ stroke: '#e2e8f0' }}
+        />
+        <YAxis
+          tickFormatter={(v) => v.toFixed(0) + '%'}
+          tick={{ fontSize: 10 }}
+          width={40}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          formatter={(v) =>
+            typeof v === 'number'
+              ? (v >= 0 ? '+' : '') + v.toFixed(2).replace('.', ',') + '%'
+              : String(v ?? '')
+          }
+          labelFormatter={(l) => `Hora: ${l}`}
+        />
+        <Bar dataKey="difPct" radius={[3, 3, 0, 0]}>
+          {filtrado.map((d, i) => (
+            <Cell
+              key={i}
+              fill={(d.difPct ?? 0) >= 0 ? G_MED : G_RED}
+            />
+          ))}
+          <LabelList
+            dataKey="difPct"
+            position="top"
+            style={{ fontSize: 8, fontWeight: 600 }}
+            formatter={(v: number | null) =>
+              v != null
+                ? (v >= 0 ? '+' : '') + v.toFixed(2).replace('.', ',') + '%'
+                : ''
+            }
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }

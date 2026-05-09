@@ -1,41 +1,92 @@
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LabelList,
 } from 'recharts';
-import type { SerieTemporal } from '../../api/client';
+
+const G_LIGHT = '#3b82f6';
+const G_B = '#f59e0b'; // âmbar — período B
 
 const INT = (v: number) => new Intl.NumberFormat('pt-BR').format(v);
 
+interface CumulPoint {
+  hora: string;
+  cumA: number | null;
+  cumB: number | null;
+}
+
 interface Props {
-  serieA: SerieTemporal[];
-  serieB: SerieTemporal[];
+  data: CumulPoint[];
   labelA: string;
   labelB: string;
 }
 
-export default function GraficoLinhaComparativa({ serieA, serieB, labelA, labelB }: Props) {
-  // Merge por índice para comparação
-  const max = Math.max(serieA.length, serieB.length);
-  const data = Array.from({ length: max }, (_, i) => ({
-    chave: serieA[i]?.chave ?? serieB[i]?.chave ?? String(i),
-    valorA: serieA[i]?.valor ?? null,
-    valorB: serieB[i]?.valor ?? null,
-  }));
-
+export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
-      <h3 className="text-sm font-semibold text-slate-700 mb-3">Evolução Comparativa</h3>
-      <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis dataKey="chave" tick={{ fontSize: 11 }} tickLine={false} />
-          <YAxis tickFormatter={INT} tick={{ fontSize: 11 }} width={60} />
-          <Tooltip formatter={(v) => (typeof v === 'number' ? INT(v) : String(v ?? ''))} />
-          <Legend />
-          <Line type="monotone" dataKey="valorA" name={labelA} stroke="#3b82f6" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="valorB" name={labelB} stroke="#f59e0b" strokeWidth={2} dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={260}>
+      <LineChart
+        data={data}
+        margin={{ top: 30, right: 30, left: 10, bottom: 5 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <XAxis
+          dataKey="hora"
+          tick={{ fontSize: 10 }}
+          tickLine={false}
+          axisLine={{ stroke: '#e2e8f0' }}
+        />
+        <YAxis
+          tickFormatter={INT}
+          tick={{ fontSize: 10 }}
+          width={55}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          formatter={(v, name) => [
+            typeof v === 'number' ? INT(v) : String(v ?? ''),
+            name,
+          ]}
+        />
+        <Line
+          type="monotone"
+          dataKey="cumA"
+          name={labelA}
+          stroke={G_LIGHT}
+          strokeWidth={2}
+          strokeDasharray="6 3"
+          dot={{ r: 3, fill: G_LIGHT }}
+          connectNulls={false}
+        >
+          <LabelList
+            dataKey="cumA"
+            position="top"
+            style={{ fontSize: 9, fill: G_LIGHT, fontWeight: 600 }}
+            formatter={(v: number | null) => (v != null ? INT(v) : '')}
+          />
+        </Line>
+        <Line
+          type="monotone"
+          dataKey="cumB"
+          name={labelB}
+          stroke={G_B}
+          strokeWidth={2}
+          dot={{ r: 3, fill: G_B }}
+          connectNulls={false}
+        >
+          <LabelList
+            dataKey="cumB"
+            position="bottom"
+            style={{ fontSize: 9, fill: G_B, fontWeight: 600 }}
+            formatter={(v: number | null) => (v != null ? INT(v) : '')}
+          />
+        </Line>
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
