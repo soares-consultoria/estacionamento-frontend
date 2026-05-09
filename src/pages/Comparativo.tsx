@@ -642,10 +642,6 @@ function ComparativoAvancado() {
                   <span className="font-semibold text-white">Atualizado em:</span>{' '}
                   {new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                 </span>
-                <span>
-                  <span className="font-semibold text-white">Fonte dos dados:</span>{' '}
-                  Sistema de Estacionamento
-                </span>
               </div>
             </div>
           </ErrorBoundary>
