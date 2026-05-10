@@ -208,6 +208,22 @@ function lastDayOfMonth(d = new Date()) {
 
 const STORAGE_KEY = 'comparativo-filtros-v2';
 
+// ── Checkpoints horários analisados ──────────────────────────────────────────
+
+const CHECKPOINT_HOURS = [14, 16, 18, 20];
+
+function getHour(faixa: string): number {
+  return parseInt(faixa.split(':')[0].trim(), 10);
+}
+
+function isCheckpoint(faixa: string): boolean {
+  return CHECKPOINT_HOURS.includes(getHour(faixa));
+}
+
+function horaLabel(faixa: string): string {
+  return getHour(faixa) + 'h';
+}
+
 interface Filtros {
   inicioA: string;
   fimA: string;
@@ -246,9 +262,9 @@ export interface CumulRow {
 }
 
 function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
-  const sorted = [...porHora].sort((a, b) =>
-    a.faixa_horaria.localeCompare(b.faixa_horaria)
-  );
+  const sorted = [...porHora]
+    .filter((h) => isCheckpoint(h.faixa_horaria))
+    .sort((a, b) => a.faixa_horaria.localeCompare(b.faixa_horaria));
   let cumA = 0;
   let cumB = 0;
   return sorted
@@ -258,7 +274,7 @@ function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
       cumB += h.valor_b;
       const dif = cumB - cumA;
       return {
-        hora: h.faixa_horaria,
+        hora: horaLabel(h.faixa_horaria),
         cumA,
         cumB,
         difAbs: dif,
@@ -344,7 +360,10 @@ function ComparativoAvancado() {
     setLoading(true);
     setErro(null);
     try {
-      const result = await dashboardApi.comparativo(filtros, abortRef.current.signal);
+      const result = await dashboardApi.comparativo(
+        { ...filtros, granularidade: 'HORA' },
+        abortRef.current.signal
+      );
       setDados(result);
     } catch (e: unknown) {
       if (
@@ -367,19 +386,22 @@ function ComparativoAvancado() {
 
   // Última hora onde AMBOS os períodos têm dados
   const ultimaHoraComum = cumulRows.filter((r) => r.hasA && r.hasB).slice(-1)[0] ?? null;
-  // Última hora com qualquer dado (para exibição de referência)
+  // Última hora com dado em B (período atual); fallback para qualquer dado
   const ultimaHoraRef =
-    ultimaHoraComum ??
     cumulRows.filter((r) => r.hasB).slice(-1)[0] ??
+    ultimaHoraComum ??
     cumulRows.slice(-1)[0] ??
     null;
 
-  // Formata a faixa horária para exibição (ex: "23:00 Até 23:59" → "23:00")
-  const fmtFaixa = (faixa: string | undefined) => {
-    if (!faixa || faixa === '—') return faixa ?? '—';
-    return faixa.split(/\s+/)[0]; // pega só "23:00" ou "08h"
-  };
-  const ultimaHoraLabel = fmtFaixa(ultimaHoraRef?.hora);
+  // hora já vem formatada como "14h", "16h" pelo buildCumulative
+  const ultimaHoraLabel = ultimaHoraRef?.hora ?? '—';
+
+  // "Atualizado em": data de hoje + último checkpoint com dado em B
+  const dataHoraAtualizado = (() => {
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    if (!ultimaHoraRef) return hoje;
+    return `${hoje} ${ultimaHoraRef.hora}`;
+  })();
 
   // parcialA: usa cumA da hora comum; se não há hora comum, usa o total geral do resumo
   const parcialA = ultimaHoraComum
@@ -389,26 +411,28 @@ function ComparativoAvancado() {
     ? ultimaHoraComum.cumB
     : (dados?.resumo_b?.fluxo_total ?? 0);
 
-  // crescPct: null quando parcialA = 0 (indefinido), -100% quando B = 0
+  // crescPct: null quando parcialA = 0 (indefinido)
   const crescPct: number | null =
     parcialA > 0 ? ((parcialB - parcialA) / parcialA) * 100 : null;
 
   const shortLabelA = dados ? shortLabel(dados.periodo_a) : '';
   const shortLabelB = dados ? shortLabel(dados.periodo_b) : '';
 
+  // Apenas checkpoints com dado em pelo menos um período
   const lineData = cumulRows.map((r) => ({
     hora: r.hora,
     cumA: r.hasA ? r.cumA : null,
     cumB: r.hasB ? r.cumB : null,
   }));
 
+  // Apenas checkpoints onde AMBOS têm dado
   const barData = cumulRows.map((r) => ({
     hora: r.hora,
     difPct: r.hasA && r.hasB ? r.difPct : null,
   }));
 
-  const isHora =
-    dados?.granularidade === 'HORA' && (dados?.por_hora?.length ?? 0) > 0;
+  // Granularidade sempre HORA — mostra layout completo quando há checkpoints
+  const isHora = cumulRows.length > 0;
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -482,23 +506,6 @@ function ComparativoAvancado() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Granularidade
-                </label>
-                <select
-                  value={filtros.granularidade}
-                  onChange={(e) =>
-                    updateFiltro('granularidade', e.target.value as Granularidade)
-                  }
-                  className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-600"
-                >
-                  <option value="HORA">Hora</option>
-                  <option value="DIA">Dia</option>
-                  <option value="SEMANA">Semana</option>
-                  <option value="MES">Mês</option>
-                </select>
-              </div>
               <button
                 type="button"
                 onClick={comparar}
@@ -657,7 +664,7 @@ function ComparativoAvancado() {
                 </span>
                 <span>
                   <span className="font-semibold text-white">Atualizado em:</span>{' '}
-                  {new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                  {dataHoraAtualizado}
                 </span>
               </div>
             </div>
