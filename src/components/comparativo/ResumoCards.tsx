@@ -23,7 +23,7 @@ export default function ResumoCards({
   ultimaHora,
 }: Props) {
   const difAbs = fluxoB - fluxoA;
-  const crescPct = fluxoA > 0 ? (difAbs / fluxoA) * 100 : 0;
+  const crescPct: number | null = fluxoA > 0 ? (difAbs / fluxoA) * 100 : null;
   const positivo = difAbs >= 0;
 
   return (
@@ -93,7 +93,10 @@ export default function ResumoCards({
           className="text-2xl font-extrabold"
           style={{ color: positivo ? G_MED : G_RED }}
         >
-          {positivo ? '+' : '-'}{fmtPct(crescPct)} {positivo ? '↑' : '↓'}
+          {crescPct == null
+            ? '—'
+            : `${positivo ? '+' : '-'}${fmtPct(crescPct)} ${positivo ? '↑' : '↓'}`
+          }
         </p>
         <p className="text-xs text-slate-400 mt-1">(Até {ultimaHora})</p>
       </div>

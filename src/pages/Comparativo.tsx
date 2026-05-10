@@ -365,16 +365,33 @@ function ComparativoAvancado() {
 
   const cumulRows = dados ? buildCumulative(dados.por_hora ?? []) : [];
 
-  const ultimaHoraComum =
-    cumulRows.filter((r) => r.hasA && r.hasB).slice(-1)[0] ??
+  // Última hora onde AMBOS os períodos têm dados
+  const ultimaHoraComum = cumulRows.filter((r) => r.hasA && r.hasB).slice(-1)[0] ?? null;
+  // Última hora com qualquer dado (para exibição de referência)
+  const ultimaHoraRef =
+    ultimaHoraComum ??
     cumulRows.filter((r) => r.hasB).slice(-1)[0] ??
+    cumulRows.slice(-1)[0] ??
     null;
 
-  const parcialA =
-    ultimaHoraComum?.cumA ?? dados?.resumo_a?.fluxo_total ?? 0;
-  const parcialB =
-    ultimaHoraComum?.cumB ?? dados?.resumo_b?.fluxo_total ?? 0;
-  const crescPct = parcialA > 0 ? ((parcialB - parcialA) / parcialA) * 100 : 0;
+  // Formata a faixa horária para exibição (ex: "23:00 Até 23:59" → "23:00")
+  const fmtFaixa = (faixa: string | undefined) => {
+    if (!faixa || faixa === '—') return faixa ?? '—';
+    return faixa.split(/\s+/)[0]; // pega só "23:00" ou "08h"
+  };
+  const ultimaHoraLabel = fmtFaixa(ultimaHoraRef?.hora);
+
+  // parcialA: usa cumA da hora comum; se não há hora comum, usa o total geral do resumo
+  const parcialA = ultimaHoraComum
+    ? ultimaHoraComum.cumA
+    : (dados?.resumo_a?.fluxo_total ?? 0);
+  const parcialB = ultimaHoraComum
+    ? ultimaHoraComum.cumB
+    : (dados?.resumo_b?.fluxo_total ?? 0);
+
+  // crescPct: null quando parcialA = 0 (indefinido), -100% quando B = 0
+  const crescPct: number | null =
+    parcialA > 0 ? ((parcialB - parcialA) / parcialA) * 100 : null;
 
   const shortLabelA = dados ? shortLabel(dados.periodo_a) : '';
   const shortLabelB = dados ? shortLabel(dados.periodo_b) : '';
@@ -520,7 +537,7 @@ function ComparativoAvancado() {
                 fluxoB={parcialB}
                 labelA={shortLabelA}
                 labelB={shortLabelB}
-                ultimaHora={ultimaHoraComum?.hora ?? '—'}
+                ultimaHora={ultimaHoraLabel}
               />
 
               {isHora ? (
@@ -599,7 +616,7 @@ function ComparativoAvancado() {
                           fluxoA={parcialA}
                           fluxoB={parcialB}
                           crescPct={crescPct}
-                          ultimaHora={ultimaHoraComum?.hora ?? '—'}
+                          ultimaHora={ultimaHoraLabel}
                           labelA={shortLabelA}
                           labelB={shortLabelB}
                         />

@@ -5,7 +5,7 @@ const G_DARK = '#1e293b';
 interface Props {
   fluxoA: number;
   fluxoB: number;
-  crescPct: number;
+  crescPct: number | null;
   ultimaHora: string;
   labelA: string;
   labelB: string;
@@ -17,21 +17,30 @@ export default function ResumoExecutivo({
   labelA,
   labelB,
 }: Props) {
-  const sinal = crescPct >= 0 ? 'acima' : 'abaixo';
-  const pctFormatado = Math.abs(crescPct).toFixed(2).replace('.', ',') + '%';
+  const sinal = (crescPct ?? 0) >= 0 ? 'acima' : 'abaixo';
+  const pctFormatado =
+    crescPct == null
+      ? null
+      : Math.abs(crescPct).toFixed(2).replace('.', ',') + '%';
 
   const bullets = [
     {
       Icon: TrendingUp,
-      texto: (
-        <>
-          Até {ultimaHora}, o fluxo de <strong>{labelB}</strong> está{' '}
-          <strong>
-            {pctFormatado} {sinal}
-          </strong>{' '}
-          de <strong>{labelA}</strong>.
-        </>
-      ),
+      texto:
+        pctFormatado == null ? (
+          <>
+            Dados insuficientes para calcular o crescimento de{' '}
+            <strong>{labelB}</strong> em relação a <strong>{labelA}</strong>.
+          </>
+        ) : (
+          <>
+            Até {ultimaHora}, o fluxo de <strong>{labelB}</strong> está{' '}
+            <strong>
+              {pctFormatado} {sinal}
+            </strong>{' '}
+            de <strong>{labelA}</strong>.
+          </>
+        ),
     },
     {
       Icon: Clock,
