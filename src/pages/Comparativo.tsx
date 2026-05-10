@@ -389,14 +389,14 @@ function ComparativoAvancado() {
 
   const cumulRows = dados ? buildCumulative(dados.por_hora ?? []) : [];
 
-  // Última hora onde AMBOS os períodos têm dados
+  // Última hora onde AMBOS os períodos têm dados (para comparação justa)
   const ultimaHoraComum = cumulRows.filter((r) => r.hasA && r.hasB).slice(-1)[0] ?? null;
-  // Última hora com dado em B (período atual); fallback para qualquer dado
-  const ultimaHoraRef =
-    cumulRows.filter((r) => r.hasB).slice(-1)[0] ??
-    ultimaHoraComum ??
-    cumulRows.slice(-1)[0] ??
-    null;
+  // Último checkpoint com dado em B (período atual)
+  const ultimaComB = cumulRows.filter((r) => r.hasB).slice(-1)[0] ?? null;
+  // Último checkpoint com dado em A
+  const ultimaComA = cumulRows.filter((r) => r.hasA).slice(-1)[0] ?? null;
+  // Referência para "Atualizado em" e label: prioriza B, depois A
+  const ultimaHoraRef = ultimaComB ?? ultimaComA ?? cumulRows.slice(-1)[0] ?? null;
 
   // hora já vem formatada como "14h", "16h" pelo buildCumulative
   const ultimaHoraLabel = ultimaHoraRef?.hora ?? '—';
@@ -408,17 +408,22 @@ function ComparativoAvancado() {
     return `${dataFimB} ${ultimaHoraRef.hora}`; // ex: "09/03/2026 20h"
   })();
 
-  // parcialA: usa cumA da hora comum; se não há hora comum, usa o total geral do resumo
-  const parcialA = ultimaHoraComum
-    ? ultimaHoraComum.cumA
-    : (dados?.resumo_a?.fluxo_total ?? 0);
-  const parcialB = ultimaHoraComum
-    ? ultimaHoraComum.cumB
-    : (dados?.resumo_b?.fluxo_total ?? 0);
+  // parcialB: cumulativo dos checkpoints até o último com dado em B
+  // (não usa resumo_b.fluxo_total, que inclui todos os horários do período)
+  const parcialB: number = ultimaComB?.cumB ?? 0;
 
-  // crescPct: null quando parcialA = 0 (indefinido)
+  // parcialA: null quando A não tem nenhum dado nos checkpoints (≠ ter 0 veículos)
+  // Quando há hora comum → usa cumA nesse ponto (comparação justa)
+  // Quando só A tem dados → usa cumA no último checkpoint de A
+  const parcialA: number | null = ultimaComA != null
+    ? (ultimaHoraComum?.cumA ?? ultimaComA.cumA)
+    : null;
+
+  // crescPct: null quando parcialA é null ou zero
   const crescPct: number | null =
-    parcialA > 0 ? ((parcialB - parcialA) / parcialA) * 100 : null;
+    parcialA != null && parcialA > 0
+      ? ((parcialB - parcialA) / parcialA) * 100
+      : null;
 
   const shortLabelA = dados ? shortLabel(dados.periodo_a) : '';
   const shortLabelB = dados ? shortLabel(dados.periodo_b) : '';

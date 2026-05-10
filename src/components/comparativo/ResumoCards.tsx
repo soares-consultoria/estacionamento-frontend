@@ -8,7 +8,7 @@ const INT = (v: number) => new Intl.NumberFormat('pt-BR').format(v);
 const fmtPct = (v: number) => Math.abs(v).toFixed(2).replace('.', ',') + '%';
 
 interface Props {
-  fluxoA: number;
+  fluxoA: number | null; // null = sem dados nos checkpoints (≠ 0 veículos)
   fluxoB: number;
   labelA: string;
   labelB: string;
@@ -22,9 +22,11 @@ export default function ResumoCards({
   labelB,
   ultimaHora,
 }: Props) {
-  const difAbs = fluxoB - fluxoA;
-  const crescPct: number | null = fluxoA > 0 ? (difAbs / fluxoA) * 100 : null;
-  const positivo = difAbs >= 0;
+  const semDadosA = fluxoA == null;
+  const difAbs = semDadosA ? null : fluxoB - fluxoA!;
+  const crescPct: number | null =
+    !semDadosA && fluxoA! > 0 ? (difAbs! / fluxoA!) * 100 : null;
+  const positivo = (difAbs ?? 0) >= 0;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
@@ -39,7 +41,9 @@ export default function ResumoCards({
         >
           PARCIAL {labelA}
         </p>
-        <p className="text-2xl font-extrabold text-slate-800">{INT(fluxoA)}</p>
+        <p className="text-2xl font-extrabold text-slate-800">
+          {semDadosA ? '—' : INT(fluxoA!)}
+        </p>
         <p className="text-xs text-slate-400 mt-1">(Até {ultimaHora})</p>
       </div>
 
@@ -71,9 +75,11 @@ export default function ResumoCards({
         </p>
         <p
           className="text-2xl font-extrabold"
-          style={{ color: positivo ? G_MED : G_RED }}
+          style={{ color: difAbs == null ? G_DARK : positivo ? G_MED : G_RED }}
         >
-          {positivo ? '+' : '-'}{INT(Math.abs(difAbs))}
+          {difAbs == null
+            ? '—'
+            : `${positivo ? '+' : '-'}${INT(Math.abs(difAbs))}`}
         </p>
         <p className="text-xs text-slate-400 mt-1">(Até {ultimaHora})</p>
       </div>
@@ -91,12 +97,11 @@ export default function ResumoCards({
         </p>
         <p
           className="text-2xl font-extrabold"
-          style={{ color: positivo ? G_MED : G_RED }}
+          style={{ color: crescPct == null ? G_DARK : positivo ? G_MED : G_RED }}
         >
           {crescPct == null
             ? '—'
-            : `${positivo ? '+' : '-'}${fmtPct(crescPct)} ${positivo ? '↑' : '↓'}`
-          }
+            : `${positivo ? '+' : '-'}${fmtPct(crescPct)} ${positivo ? '↑' : '↓'}`}
         </p>
         <p className="text-xs text-slate-400 mt-1">(Até {ultimaHora})</p>
       </div>
