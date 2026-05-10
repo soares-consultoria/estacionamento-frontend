@@ -617,7 +617,7 @@ function ComparativoAvancado() {
                       <SectionHeader>DISTRIBUIÇÃO DO FLUXO</SectionHeader>
                       <div className="p-3">
                         <GraficoPizza
-                          valorA={parcialA}
+                          valorA={parcialA ?? 0}
                           valorB={parcialB}
                           labelA={shortLabelA}
                           labelB={shortLabelB}
@@ -630,7 +630,7 @@ function ComparativoAvancado() {
                       <SectionHeader>RESUMO EXECUTIVO</SectionHeader>
                       <div className="p-3">
                         <ResumoExecutivo
-                          fluxoA={parcialA}
+                          fluxoA={parcialA ?? 0}
                           fluxoB={parcialB}
                           crescPct={crescPct}
                           ultimaHora={ultimaHoraLabel}
