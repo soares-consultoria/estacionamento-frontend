@@ -216,13 +216,6 @@ function getHour(faixa: string): number {
   return parseInt(faixa.split(':')[0].trim(), 10);
 }
 
-function isCheckpoint(faixa: string): boolean {
-  return CHECKPOINT_HOURS.includes(getHour(faixa));
-}
-
-function horaLabel(faixa: string): string {
-  return getHour(faixa) + 'h';
-}
 
 interface Filtros {
   inicioA: string;
