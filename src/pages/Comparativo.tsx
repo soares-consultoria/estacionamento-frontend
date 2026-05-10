@@ -401,11 +401,11 @@ function ComparativoAvancado() {
   // hora já vem formatada como "14h", "16h" pelo buildCumulative
   const ultimaHoraLabel = ultimaHoraRef?.hora ?? '—';
 
-  // "Atualizado em": data de hoje + último checkpoint com dado em B
+  // "Atualizado em": data de fim do período B + último checkpoint com dado em B
   const dataHoraAtualizado = (() => {
-    const hoje = new Date().toLocaleDateString('pt-BR');
-    if (!ultimaHoraRef) return hoje;
-    return `${hoje} ${ultimaHoraRef.hora}`;
+    const dataFimB = fmtData(filtros.fimB); // ex: "09/03/2026"
+    if (!ultimaHoraRef) return dataFimB;
+    return `${dataFimB} ${ultimaHoraRef.hora}`; // ex: "09/03/2026 20h"
   })();
 
   // parcialA: usa cumA da hora comum; se não há hora comum, usa o total geral do resumo
