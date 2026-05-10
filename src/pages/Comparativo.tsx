@@ -262,25 +262,37 @@ export interface CumulRow {
 }
 
 function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
-  const sorted = [...porHora]
-    .filter((h) => isCheckpoint(h.faixa_horaria))
-    .sort((a, b) => a.faixa_horaria.localeCompare(b.faixa_horaria));
+  // Agrupa por hora (ex: 14, 16, 18, 20) somando todos os registros do mesmo checkpoint.
+  // Evita duplicatas quando o backend retorna múltiplas entradas para a mesma faixa horária.
+  const grouped = new Map<number, { valorA: number; valorB: number }>();
+  for (const h of porHora) {
+    const hr = getHour(h.faixa_horaria);
+    if (!CHECKPOINT_HOURS.includes(hr)) continue;
+    const prev = grouped.get(hr) ?? { valorA: 0, valorB: 0 };
+    grouped.set(hr, {
+      valorA: prev.valorA + h.valor_a,
+      valorB: prev.valorB + h.valor_b,
+    });
+  }
+
+  // Ordena pelos checkpoints em ordem crescente e calcula cumulativo
+  const sorted = [...grouped.entries()].sort(([a], [b]) => a - b);
   let cumA = 0;
   let cumB = 0;
   return sorted
-    .filter((h) => h.valor_a > 0 || h.valor_b > 0)
-    .map((h) => {
-      cumA += h.valor_a;
-      cumB += h.valor_b;
+    .filter(([, { valorA, valorB }]) => valorA > 0 || valorB > 0)
+    .map(([hr, { valorA, valorB }]) => {
+      cumA += valorA;
+      cumB += valorB;
       const dif = cumB - cumA;
       return {
-        hora: horaLabel(h.faixa_horaria),
+        hora: hr + 'h',
         cumA,
         cumB,
         difAbs: dif,
         difPct: cumA > 0 ? (dif / cumA) * 100 : null,
-        hasA: h.valor_a > 0,
-        hasB: h.valor_b > 0,
+        hasA: valorA > 0,
+        hasB: valorB > 0,
       };
     });
 }
