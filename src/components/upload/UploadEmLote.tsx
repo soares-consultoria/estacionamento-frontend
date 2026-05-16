@@ -392,9 +392,11 @@ export default function UploadEmLote({ instituicaoId, onLoteConcluido }: Props) 
 function extractMessage(err: unknown): string | null {
   if (typeof err === 'object' && err !== null) {
     const e = err as Record<string, unknown>;
-    const data = e.response as Record<string, unknown> | undefined;
-    if (data?.data && typeof (data.data as Record<string, unknown>).message === 'string') {
-      return (data.data as Record<string, unknown>).message as string;
+    const responseData = (e.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
+    if (responseData) {
+      // Backend retorna campo "mensagem" (português) ou "message" (inglês)
+      const msg = responseData['mensagem'] ?? responseData['message'];
+      if (typeof msg === 'string' && msg.trim()) return msg;
     }
     if (typeof e.message === 'string') return e.message;
   }
