@@ -46,8 +46,8 @@ interface Props {
 }
 
 const CONCORRENCIA = 1;          // sequencial para evitar rate limit da OpenAI
-const POLL_INTERVAL_MS = 3000;
-const POLL_MAX_TENTATIVAS = 100; // ~5 min (cobre retries de rate limit no backend)
+const POLL_INTERVAL_MS = 5000;
+const POLL_MAX_TENTATIVAS = 360; // ~30 min (cobre retries longos de rate limit no backend)
 
 /* ─── Utilitários ─── */
 
