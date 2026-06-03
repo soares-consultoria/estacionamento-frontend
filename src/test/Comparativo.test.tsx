@@ -18,7 +18,13 @@ vi.mock('../api/client', () => ({
       delta: { fluxo_total_pct: 20, media_por_hora_pct: 20, ticket_medio_pct: 6.67, receita_pct: 20, pagantes_pct: 22.22 },
       serie_a: [{ chave: '2025-05-01', valor: 100, label: '2025-05-01' }],
       serie_b: [{ chave: '2026-05-01', valor: 120, label: '2026-05-01' }],
-      por_hora: [{ faixa_horaria: '10h', valor_a: 100, valor_b: 120, delta_pct: 20 }],
+      // Horas-checkpoint (14/16/18/20) — o layout horário cumulativo só renderiza com elas
+      por_hora: [
+        { faixa_horaria: '14:00', valor_a: 100, valor_b: 120, delta_pct: 20 },
+        { faixa_horaria: '16:00', valor_a: 200, valor_b: 240, delta_pct: 20 },
+        { faixa_horaria: '18:00', valor_a: 300, valor_b: 360, delta_pct: 20 },
+        { faixa_horaria: '20:00', valor_a: 400, valor_b: 480, delta_pct: 20 },
+      ],
       heatmap: [],
       granularidade: 'HORA',
     }),
@@ -39,13 +45,13 @@ describe('Comparativo page', () => {
     });
   });
 
-  it('renderiza tabela horária quando granularidade=HORA', async () => {
+  it('renderiza layout horário quando granularidade=HORA', async () => {
     render(<Comparativo />);
     fireEvent.click(screen.getByText('Comparar'));
     await waitFor(() => {
-      // '10h' aparece na tabela e nos cards (Até 10h), então usa getAllByText
-      const matches = screen.getAllByText('10h');
-      expect(matches.length).toBeGreaterThan(0);
+      // O layout cumulativo por hora só aparece quando há horas-checkpoint nos dados.
+      // Assertamos o cabeçalho de seção (estável) em vez de um rótulo dentro do gráfico SVG.
+      expect(screen.getByText(/FLUXO POR HORA/i)).toBeInTheDocument();
     });
   });
 });

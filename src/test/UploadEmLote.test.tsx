@@ -113,11 +113,13 @@ describe('UploadEmLote', () => {
     await waitFor(() => screen.getByText('ok.pdf'));
     fireEvent.click(screen.getByRole('button', { name: /Enviar/i }));
 
+    // O componente espera POLL_INTERVAL_MS (5s) antes do 1º poll do status do job.
+    // waitFor de 8s precisa caber dentro do testTimeout — por isso o 3º arg do it() abaixo.
     await waitFor(
       () => expect(screen.getByText(/Processado/i)).toBeInTheDocument(),
       { timeout: 8000 },
     );
-  });
+  }, 10000);
 
   it('botão Enviar fica desabilitado quando não há arquivos pendentes', () => {
     render(<UploadEmLote />);
