@@ -13,7 +13,10 @@ export interface KpiMensal {
   receita_total: number;
   receita_variacao_pct: number | null;
   pagantes_total: number;
+  /** @deprecated usar ticket_medio_rotativo */
   ticket_medio: number;
+  ticket_medio_rotativo: number | null;
+  ticket_medio_mensalista: number | null;
   dias_com_dados: number;
 }
 

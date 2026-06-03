@@ -135,7 +135,7 @@ export default function Overview() {
         {loadingKpi ? (
           <LoadingSpinner label="Carregando KPIs..." />
         ) : kpi ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
             <KpiCard
               title="Fluxo Total"
               value={INT(kpi.fluxo_total)}
@@ -160,11 +160,18 @@ export default function Overview() {
               colorClass="text-violet-600"
             />
             <KpiCard
-              title="Ticket Médio"
-              value={BRL(kpi.ticket_medio)}
-              subtitle={`${kpi.dias_com_dados ?? 0} dias com dados`}
+              title="Ticket Médio Rotativo"
+              value={BRL(kpi.ticket_medio_rotativo ?? kpi.ticket_medio)}
+              subtitle="por ticket pago"
               icon={<BarChart2 size={18} />}
               colorClass="text-amber-600"
+            />
+            <KpiCard
+              title="Ticket Médio Mensalista"
+              value={kpi.ticket_medio_mensalista != null ? BRL(kpi.ticket_medio_mensalista) : '—'}
+              subtitle="por contrato pago"
+              icon={<BarChart2 size={18} />}
+              colorClass="text-cyan-600"
             />
           </div>
         ) : (
