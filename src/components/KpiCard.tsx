@@ -25,12 +25,12 @@ export default function KpiCard({ title, value, variacao, subtitle, icon, colorC
         )}
       </div>
 
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-bold text-slate-800">{value}</span>
+      <div className="flex flex-wrap items-end gap-x-2 gap-y-1 min-w-0">
+        <span className="text-2xl font-bold text-slate-800 leading-none break-words min-w-0">{value}</span>
         {hasVariacao && (
-          <div className={`flex items-center gap-0.5 text-sm font-medium mb-0.5 ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
+          <div className={`flex items-center gap-0.5 text-sm font-medium whitespace-nowrap ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
             {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            <span>{isPositive ? '▲' : '▼'} {Math.abs(variacao!).toFixed(1)}%</span>
+            <span>{Math.abs(variacao!).toFixed(1)}%</span>
           </div>
         )}
       </div>
