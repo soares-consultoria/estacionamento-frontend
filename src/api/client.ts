@@ -381,6 +381,9 @@ export const contaApi = {
   alterarPlano: (id: number, plano: string, valorCobrado?: number) =>
     api.put<ContaResumo>(`/api/admin/contas/${id}/plano`, { plano, valorCobrado }).then(r => r.data),
 
+  alterarVencimento: (id: number, dataVencimento: string) =>
+    api.put<ContaResumo>(`/api/admin/contas/${id}/vencimento`, { dataVencimento }).then(r => r.data),
+
   historico: (id: number) =>
     api.get<HistoricoPlanoItem[]>(`/api/admin/contas/${id}/historico`).then(r => r.data),
 

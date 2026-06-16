@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { contaApi, type ContaResumo, type HistoricoPlanoItem } from '../../api/client';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useAuth } from '../../hooks/useAuth';
 
 type PlanoNome = 'ESSENCIAL' | 'PROFISSIONAL' | 'ENTERPRISE';
 type MotivoNome = 'UPGRADE' | 'DOWNGRADE' | 'NOVO_CLIENTE' | 'CANCELAMENTO';
@@ -83,6 +84,8 @@ interface NovaConta {
 }
 
 export default function Contas() {
+  const { user } = useAuth();
+  const isSistemaAdmin = user?.role === 'SISTEMA_ADMIN';
   const [contas, setContas] = useState<ContaResumo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +138,22 @@ export default function Contas() {
       setTimeout(() => setSuccessId(null), 2000);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao salvar');
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function handleChangeVencimento(contaId: number, novaData: string) {
+    if (!novaData) return;
+    setSaving(contaId);
+    setError(null);
+    try {
+      const data = await contaApi.alterarVencimento(contaId, novaData);
+      setContas(prev => prev.map(c => c.id === contaId ? { ...c, ...data } : c));
+      setSuccessId(contaId);
+      setTimeout(() => setSuccessId(null), 2000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro ao alterar vencimento');
     } finally {
       setSaving(null);
     }
@@ -300,7 +319,22 @@ export default function Contas() {
                           <span title="Usuários por unidade">
                             {conta.maxUsuariosPorInstituicao >= 999999 ? '∞' : conta.maxUsuariosPorInstituicao} usuários/unid.
                           </span>
-                          <span title="Vencimento">Vence {formatDate(conta.dataVencimento)}</span>
+                          {isSistemaAdmin ? (
+                            <span title="Vencimento" className="flex items-center gap-1">
+                              <Clock size={13} className="text-slate-400" />
+                              Vence
+                              <input
+                                type="date"
+                                value={conta.dataVencimento.slice(0, 10)}
+                                min={conta.dataInicioPlano.slice(0, 10)}
+                                onChange={e => handleChangeVencimento(conta.id, e.target.value)}
+                                disabled={isSaving}
+                                className="border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
+                              />
+                            </span>
+                          ) : (
+                            <span title="Vencimento">Vence {formatDate(conta.dataVencimento)}</span>
+                          )}
                         </div>
 
                         {/* Alterar plano */}
