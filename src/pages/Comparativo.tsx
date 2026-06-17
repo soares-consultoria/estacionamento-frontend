@@ -580,8 +580,6 @@ function ComparativoAvancado() {
                     <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                       <TabelaHorariaComparativa
                         linhas={cumulRows}
-                        totalGeralA={dados.resumo_a?.fluxo_total ?? 0}
-                        totalGeralB={dados.resumo_b?.fluxo_total ?? 0}
                         labelA={shortLabelA}
                         labelB={shortLabelB}
                       />
