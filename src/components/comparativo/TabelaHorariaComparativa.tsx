@@ -30,6 +30,15 @@ export default function TabelaHorariaComparativa({
   labelA,
   labelB,
 }: Props) {
+  // Total do dia = soma das entradas de cada hora (consistente com as linhas).
+  const totalA = linhas.reduce((s, r) => s + (r.hasA ? r.valorA : 0), 0);
+  const totalB = linhas.reduce((s, r) => s + (r.hasB ? r.valorB : 0), 0);
+  const temAmbos = totalA > 0 && totalB > 0;
+  const difTotal = totalB - totalA;
+  const pctTotal = totalA > 0 ? (difTotal / totalA) * 100 : null;
+  const positivoTotal = difTotal >= 0;
+  const corTotal = positivoTotal ? G_MED : G_RED;
+
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200">
       {/* Header da tabela */}
@@ -97,6 +106,31 @@ export default function TabelaHorariaComparativa({
               );
             })}
           </tbody>
+          <tfoot className="border-t-2 border-slate-300 bg-slate-100">
+            <tr>
+              <td className="px-3 py-2 text-xs font-bold text-slate-800 uppercase">
+                TOTAL
+              </td>
+              <td className="px-3 py-2 text-right text-xs font-bold text-slate-800">
+                {totalA > 0 ? INT(totalA) : '—'}
+              </td>
+              <td className="px-3 py-2 text-right text-xs font-bold text-slate-800">
+                {totalB > 0 ? INT(totalB) : '—'}
+              </td>
+              <td
+                className="px-3 py-2 text-right text-xs font-bold"
+                style={{ color: temAmbos ? corTotal : '#94a3b8' }}
+              >
+                {temAmbos ? (positivoTotal ? '+' : '') + INT(difTotal) : '—'}
+              </td>
+              <td
+                className="px-3 py-2 text-right text-xs font-bold"
+                style={{ color: temAmbos ? corTotal : '#94a3b8' }}
+              >
+                {temAmbos ? fmtPct(pctTotal) : '—'}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
