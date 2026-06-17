@@ -328,6 +328,7 @@ const G_DARK = '#1e293b';
 function ComparativoAvancado() {
   const [filtros, setFiltros] = useState<Filtros>(loadFiltros);
   const [dados, setDados] = useState<ComparativoPeriodos | null>(null);
+  const [consultadoEm, setConsultadoEm] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -375,6 +376,7 @@ function ComparativoAvancado() {
         abortRef.current.signal
       );
       setDados(result);
+      setConsultadoEm(new Date()); // horário real em que a consulta foi efetuada
     } catch (e: unknown) {
       if (
         (e as Error).name !== 'CanceledError' &&
@@ -406,11 +408,18 @@ function ComparativoAvancado() {
   // hora já vem formatada como "14h", "16h" pelo buildCumulative
   const ultimaHoraLabel = ultimaHoraRef?.hora ?? '—';
 
-  // "Atualizado em": data de fim do período B + último checkpoint com dado em B
+  // Dia completo: a importação cobriu o dia inteiro (chegou à faixa das 23h).
+  // Caso contrário, é parcial (importação parcial / dia ainda em andamento).
+  const HORA_FECHAMENTO = 23;
+  const diaCompleto = ultimaComB != null && getHour(ultimaComB.hora) >= HORA_FECHAMENTO;
+
+  // "Atualizado em": horário REAL em que a consulta foi efetuada (não o último
+  // horário dos dados). Ex.: "16/06/2026 14:32".
   const dataHoraAtualizado = (() => {
-    const dataFimB = fmtData(filtros.fimB); // ex: "09/03/2026"
-    if (!ultimaHoraRef) return dataFimB;
-    return `${dataFimB} ${ultimaHoraRef.hora}`; // ex: "09/03/2026 20h"
+    const d = consultadoEm ?? new Date();
+    const data = d.toLocaleDateString('pt-BR');
+    const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${data} ${hora}`;
   })();
 
   // parcialB: cumulativo dos checkpoints até o último com dado em B
@@ -560,6 +569,7 @@ function ComparativoAvancado() {
                 labelA={shortLabelA}
                 labelB={shortLabelB}
                 ultimaHora={ultimaHoraLabel}
+                diaCompleto={diaCompleto}
               />
 
               {isHora ? (
@@ -641,6 +651,8 @@ function ComparativoAvancado() {
                           ultimaHora={ultimaHoraLabel}
                           labelA={shortLabelA}
                           labelB={shortLabelB}
+                          diaCompleto={diaCompleto}
+                          totalB={dados.resumo_b?.fluxo_total ?? parcialB}
                         />
                       </div>
                     </div>
