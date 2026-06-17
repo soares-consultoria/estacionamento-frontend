@@ -19,6 +19,7 @@ export interface CumulRow {
 interface Props {
   linhas: CumulRow[];
   totalGeralA: number;
+  totalGeralB: number;
   labelA: string;
   labelB: string;
 }
@@ -26,9 +27,17 @@ interface Props {
 export default function TabelaHorariaComparativa({
   linhas,
   totalGeralA,
+  totalGeralB,
   labelA,
   labelB,
 }: Props) {
+  // Total geral: diferença e % do período inteiro (A e B). "—" só quando falta A
+  // ou A é zero (não dá para calcular variação percentual).
+  const temAmbos = totalGeralA > 0 && totalGeralB > 0;
+  const difGeral = totalGeralB - totalGeralA;
+  const pctGeral = totalGeralA > 0 ? (difGeral / totalGeralA) * 100 : null;
+  const positivoGeral = difGeral >= 0;
+  const corGeral = positivoGeral ? G_MED : G_RED;
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200">
       {/* Header da tabela */}
@@ -101,9 +110,21 @@ export default function TabelaHorariaComparativa({
               <td className="px-3 py-2 text-right text-xs font-bold text-slate-800">
                 {INT(totalGeralA)}
               </td>
-              <td className="px-3 py-2 text-right text-xs text-slate-400">—</td>
-              <td className="px-3 py-2 text-right text-xs text-slate-400">—</td>
-              <td className="px-3 py-2 text-right text-xs text-slate-400">—</td>
+              <td className="px-3 py-2 text-right text-xs font-bold text-slate-800">
+                {totalGeralB > 0 ? INT(totalGeralB) : '—'}
+              </td>
+              <td
+                className="px-3 py-2 text-right text-xs font-bold"
+                style={{ color: temAmbos ? corGeral : '#94a3b8' }}
+              >
+                {temAmbos ? (positivoGeral ? '+' : '') + INT(difGeral) : '—'}
+              </td>
+              <td
+                className="px-3 py-2 text-right text-xs font-bold"
+                style={{ color: temAmbos ? corGeral : '#94a3b8' }}
+              >
+                {temAmbos ? fmtPct(pctGeral) : '—'}
+              </td>
             </tr>
           </tfoot>
         </table>

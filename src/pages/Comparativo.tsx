@@ -581,6 +581,7 @@ function ComparativoAvancado() {
                       <TabelaHorariaComparativa
                         linhas={cumulRows}
                         totalGeralA={dados.resumo_a?.fluxo_total ?? 0}
+                        totalGeralB={dados.resumo_b?.fluxo_total ?? 0}
                         labelA={shortLabelA}
                         labelB={shortLabelB}
                       />
