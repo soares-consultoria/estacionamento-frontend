@@ -55,6 +55,13 @@ function uid() {
   return Math.random().toString(36).slice(2);
 }
 
+/** Mensagem de erro do backend indica duplicidade por data (não falha real). */
+function ehDuplicidade(msg: string | null): boolean {
+  if (!msg) return false;
+  const m = msg.toLowerCase();
+  return m.includes('duplicado não importado') || m.includes('já existe um relatório');
+}
+
 function statusLabel(s: FileStatus): string {
   switch (s) {
     case 'idle': return 'Aguardando';
@@ -173,7 +180,11 @@ export default function UploadEmLote({ instituicaoId, onLoteConcluido }: Props) 
           return;
         }
         if (job.status === 'ERRO') {
-          patch(id, { status: 'error', mensagem: job.mensagem ?? 'Erro no processamento' });
+          const msg = job.mensagem ?? 'Erro no processamento';
+          // Duplicidade por data (arquivo diferente, mesma data/instituição) não é
+          // falha de upload — é a trava anti-duplicidade. Mostra como "já enviado".
+          const ehDuplicado = ehDuplicidade(msg);
+          patch(id, { status: ehDuplicado ? 'duplicate' : 'error', mensagem: msg });
           return;
         }
         // PENDENTE / PROCESSANDO — continuar polling

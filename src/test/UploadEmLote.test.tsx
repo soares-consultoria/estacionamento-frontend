@@ -105,6 +105,32 @@ describe('UploadEmLote', () => {
     });
   });
 
+  it('trata job ERRO de duplicidade por data como "Já enviado", não como Erro', async () => {
+    const { importacaoApi } = await import('../api/client');
+    vi.mocked(importacaoApi.consultarJob).mockResolvedValueOnce({
+      id: 42,
+      status: 'ERRO',
+      mensagem:
+        'Já existe um Relatório de Movimentação (REM) para 2025-01-07 nesta instituição. Arquivo duplicado não importado.',
+      nomeArquivo: 'ESTAT. 07-01-2025.pdf',
+      instituicaoId: 1,
+    });
+
+    render(<UploadEmLote />);
+    const dropZone = screen.getByText(/Arraste PDFs/i).parentElement!;
+    fireEvent.drop(dropZone, { dataTransfer: { files: [makePdf('ESTAT. 07-01-2025.pdf')] } });
+
+    await waitFor(() => screen.getByText('ESTAT. 07-01-2025.pdf'));
+    fireEvent.click(screen.getByRole('button', { name: /Enviar/i }));
+
+    await waitFor(
+      () => expect(screen.getByText(/Já enviado/i)).toBeInTheDocument(),
+      { timeout: 8000 },
+    );
+    // Não deve marcar como Erro
+    expect(screen.queryByText(/^Erro$/)).not.toBeInTheDocument();
+  }, 10000);
+
   it('exibe badge "Processado" após upload bem-sucedido', async () => {
     render(<UploadEmLote />);
     const dropZone = screen.getByText(/Arraste PDFs/i).parentElement!;
