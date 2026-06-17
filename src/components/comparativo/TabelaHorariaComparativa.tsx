@@ -10,6 +10,9 @@ export interface CumulRow {
   hora: string;
   cumA: number;
   cumB: number;
+  // Entradas da própria hora (não acumulado) — exibidas na tabela.
+  valorA: number;
+  valorB: number;
   difAbs: number;
   difPct: number | null;
   hasA: boolean;
@@ -34,11 +37,11 @@ export default function TabelaHorariaComparativa({
         className="text-white text-xs font-bold uppercase px-3 py-2 tracking-wider"
         style={{ background: G_DARK }}
       >
-        TABELA COMPARATIVA
+        ENTRADAS POR HORA
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm" aria-label="Tabela comparativa cumulativa">
+        <table className="w-full text-sm" aria-label="Entradas de avulsos por hora">
           <thead>
             <tr style={{ background: G_DARK }}>
               <th className="text-left px-3 py-2 text-xs font-semibold text-white uppercase tracking-wider">
@@ -60,7 +63,10 @@ export default function TabelaHorariaComparativa({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {linhas.map((row, i) => {
-              const positivo = row.difAbs >= 0;
+              // Diferença da PRÓPRIA hora (entradas de B − entradas de A).
+              const difHora = row.valorB - row.valorA;
+              const pctHora = row.valorA > 0 ? (difHora / row.valorA) * 100 : null;
+              const positivo = difHora >= 0;
               const corDif = positivo ? G_MED : G_RED;
               return (
                 <tr key={row.hora} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
@@ -68,24 +74,24 @@ export default function TabelaHorariaComparativa({
                     {row.hora}
                   </td>
                   <td className="px-3 py-2 text-right text-xs text-slate-700">
-                    {row.hasA ? INT(row.cumA) : '—'}
+                    {row.hasA ? INT(row.valorA) : '—'}
                   </td>
                   <td className="px-3 py-2 text-right text-xs text-slate-700">
-                    {row.hasB ? INT(row.cumB) : '—'}
+                    {row.hasB ? INT(row.valorB) : '—'}
                   </td>
                   <td
                     className="px-3 py-2 text-right text-xs font-semibold"
                     style={{ color: row.hasA && row.hasB ? corDif : '#94a3b8' }}
                   >
                     {row.hasA && row.hasB
-                      ? (positivo ? '+' : '') + INT(row.difAbs)
+                      ? (positivo ? '+' : '') + INT(difHora)
                       : '—'}
                   </td>
                   <td
                     className="px-3 py-2 text-right text-xs font-semibold"
                     style={{ color: row.hasA && row.hasB ? corDif : '#94a3b8' }}
                   >
-                    {row.hasA && row.hasB ? fmtPct(row.difPct) : '—'}
+                    {row.hasA && row.hasB ? fmtPct(pctHora) : '—'}
                   </td>
                 </tr>
               );

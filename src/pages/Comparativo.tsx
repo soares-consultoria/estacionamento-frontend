@@ -246,6 +246,9 @@ export interface CumulRow {
   hora: string;
   cumA: number;
   cumB: number;
+  // Entradas da própria hora (não acumulado) — usadas na tabela.
+  valorA: number;
+  valorB: number;
   difAbs: number;
   difPct: number | null;
   hasA: boolean;
@@ -287,6 +290,8 @@ function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
         hora: hr + 'h',
         cumA,
         cumB,
+        valorA,
+        valorB,
         difAbs: dif,
         difPct: cumA > 0 ? (dif / cumA) * 100 : null,
         hasA: valorA > 0,
@@ -449,10 +454,13 @@ function ComparativoAvancado() {
     cumB: r.hasB ? r.cumB : null,
   }));
 
-  // Apenas checkpoints onde AMBOS têm dado
+  // Dif. % da PRÓPRIA hora (entradas de B vs A), só quando ambos têm dado.
   const barData = cumulRows.map((r) => ({
     hora: r.hora,
-    difPct: r.hasA && r.hasB ? r.difPct : null,
+    difPct:
+      r.hasA && r.hasB && r.valorA > 0
+        ? ((r.valorB - r.valorA) / r.valorA) * 100
+        : null,
   }));
 
   // Granularidade sempre HORA — mostra layout completo quando há checkpoints
