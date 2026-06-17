@@ -27,6 +27,10 @@ interface Props {
 }
 
 export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props) {
+  // Com muitas horas (operação de dia inteiro), rótulos em todos os pontos ficam
+  // ilegíveis. Mostra rótulos inline só quando há poucos pontos; caso contrário,
+  // os valores ficam no tooltip (hover) e na tabela comparativa.
+  const mostrarRotulos = data.length <= 8;
   return (
     <ResponsiveContainer width="100%" height={260}>
       <LineChart
@@ -63,12 +67,14 @@ export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props)
           dot={{ r: 3, fill: G_LIGHT }}
           connectNulls={false}
         >
-          <LabelList
-            dataKey="cumA"
-            position="top"
-            style={{ fontSize: 9, fill: G_LIGHT, fontWeight: 600 }}
-            formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
-          />
+          {mostrarRotulos && (
+            <LabelList
+              dataKey="cumA"
+              position="top"
+              style={{ fontSize: 9, fill: G_LIGHT, fontWeight: 600 }}
+              formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
+            />
+          )}
         </Line>
         <Line
           type="monotone"
@@ -79,12 +85,14 @@ export default function GraficoLinhaComparativa({ data, labelA, labelB }: Props)
           dot={{ r: 3, fill: G_B }}
           connectNulls={false}
         >
-          <LabelList
-            dataKey="cumB"
-            position="bottom"
-            style={{ fontSize: 9, fill: G_B, fontWeight: 600 }}
-            formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
-          />
+          {mostrarRotulos && (
+            <LabelList
+              dataKey="cumB"
+              position="bottom"
+              style={{ fontSize: 9, fill: G_B, fontWeight: 600 }}
+              formatter={(v: unknown) => (typeof v === 'number' ? INT(v) : '')}
+            />
+          )}
         </Line>
       </LineChart>
     </ResponsiveContainer>

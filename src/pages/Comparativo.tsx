@@ -208,9 +208,7 @@ function lastDayOfMonth(d = new Date()) {
 
 const STORAGE_KEY = 'comparativo-filtros-v2';
 
-// ── Checkpoints horários analisados ──────────────────────────────────────────
-
-const CHECKPOINT_HOURS = [14, 16, 18, 20];
+// ── Horário de operação ──────────────────────────────────────────────────────
 
 function getHour(faixa: string): number {
   return parseInt(faixa.split(':')[0].trim(), 10);
@@ -255,12 +253,11 @@ export interface CumulRow {
 }
 
 function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
-  // Agrupa por hora (ex: 14, 16, 18, 20) somando todos os registros do mesmo checkpoint.
-  // Evita duplicatas quando o backend retorna múltiplas entradas para a mesma faixa horária.
+  // Soma o movimento por hora (0–23), agregando faixas repetidas da mesma hora.
   const grouped = new Map<number, { valorA: number; valorB: number }>();
   for (const h of porHora) {
     const hr = getHour(h.faixa_horaria);
-    if (!CHECKPOINT_HOURS.includes(hr)) continue;
+    if (Number.isNaN(hr)) continue;
     const prev = grouped.get(hr) ?? { valorA: 0, valorB: 0 };
     grouped.set(hr, {
       valorA: prev.valorA + h.valor_a,
@@ -268,12 +265,20 @@ function buildCumulative(porHora: HoraComparativo[]): CumulRow[] {
     });
   }
 
-  // Ordena pelos checkpoints em ordem crescente e calcula cumulativo
   const sorted = [...grouped.entries()].sort(([a], [b]) => a - b);
+
+  // Janela de operação: da PRIMEIRA à ÚLTIMA hora com movimento (em A ou B).
+  // Mostra todas as horas entre elas (cumulativo desde a abertura), em vez de
+  // checkpoints fixos — assim a manhã e a noite não somem da comparação.
+  const comMovimento = sorted.filter(([, v]) => v.valorA > 0 || v.valorB > 0);
+  if (comMovimento.length === 0) return [];
+  const horaAbertura = comMovimento[0][0];
+  const horaFechamento = comMovimento[comMovimento.length - 1][0];
+
   let cumA = 0;
   let cumB = 0;
   return sorted
-    .filter(([, { valorA, valorB }]) => valorA > 0 || valorB > 0)
+    .filter(([hr]) => hr >= horaAbertura && hr <= horaFechamento)
     .map(([hr, { valorA, valorB }]) => {
       cumA += valorA;
       cumB += valorB;

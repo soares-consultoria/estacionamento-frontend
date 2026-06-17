@@ -24,6 +24,8 @@ interface Props {
 
 export default function GraficoBarrasHora({ data }: Props) {
   const filtrado = data.filter((d) => d.difPct != null);
+  // Muitas barras (dia inteiro) → rótulos viram ruído; mantém só no tooltip.
+  const mostrarRotulos = filtrado.length <= 8;
 
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -60,15 +62,17 @@ export default function GraficoBarrasHora({ data }: Props) {
               fill={(d.difPct ?? 0) >= 0 ? G_MED : G_RED}
             />
           ))}
-          <LabelList
-            dataKey="difPct"
-            position="top"
-            style={{ fontSize: 8, fontWeight: 600 }}
-            formatter={(v: unknown) => {
-              const n = typeof v === 'number' ? v : null;
-              return n != null ? (n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',') + '%' : '';
-            }}
-          />
+          {mostrarRotulos && (
+            <LabelList
+              dataKey="difPct"
+              position="top"
+              style={{ fontSize: 8, fontWeight: 600 }}
+              formatter={(v: unknown) => {
+                const n = typeof v === 'number' ? v : null;
+                return n != null ? (n >= 0 ? '+' : '') + n.toFixed(2).replace('.', ',') + '%' : '';
+              }}
+            />
+          )}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
