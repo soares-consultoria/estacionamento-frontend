@@ -431,6 +431,10 @@ export interface ArquivoUploadItem {
   status_processamento: ArquivoProcessadoStatus;
   criado_em: string;
   finalizado_em: string | null;
+  /** Data extraída do nome do arquivo (fonte autoritativa); null se não parseável. */
+  data_nome_arquivo: string | null;
+  /** true quando a data gravada diverge da data do nome do arquivo (registro mal-datado). */
+  data_divergente: boolean;
 }
 
 export interface DiaUpload {

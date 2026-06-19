@@ -28,6 +28,13 @@ function mesAtual() {
   return { ano: now.getFullYear(), mes: now.getMonth() + 1 };
 }
 
+/** Formata "2026-06-18" → "18/06/2026". */
+function fmtDataNome(iso: string | null): string {
+  if (!iso) return '—';
+  const [ano, mes, dia] = iso.split('T')[0].split('-');
+  return dia ? `${dia}/${mes}/${ano}` : iso;
+}
+
 export default function HistoricoUploadPage() {
   const { user } = useAuth();
   const { selectedId } = useContext(InstituicaoContext);
@@ -265,6 +272,16 @@ function DiaCard({ dia, expandido, onToggle }: {
                 <p className="text-xs text-slate-400 mt-0.5">
                   {arq.tipo_relatorio ? TIPO_LABEL[arq.tipo_relatorio] ?? arq.tipo_relatorio : '—'}
                 </p>
+                {arq.data_divergente && (
+                  <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
+                    <AlertTriangle size={12} className="flex-shrink-0" />
+                    <span>
+                      Data divergente: o nome indica{' '}
+                      <strong>{fmtDataNome(arq.data_nome_arquivo)}</strong>, mas foi gravado neste dia.
+                      Reimporte para corrigir.
+                    </span>
+                  </p>
+                )}
               </div>
               <div className="text-right flex-shrink-0">
                 <StatusBadge status={arq.status_processamento} />
