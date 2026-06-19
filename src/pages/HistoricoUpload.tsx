@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronRight,
-  FileText, Loader2, SearchX,
+  FileText, Loader2, RefreshCw, SearchX,
 } from 'lucide-react';
 import { importacaoApi, type DiaUpload, type HistoricoUpload } from '../api/client';
 import { InstituicaoContext } from '../contexts/InstituicaoContext';
@@ -82,6 +82,34 @@ export default function HistoricoUploadPage() {
       if (next.has(data)) { next.delete(data); } else { next.add(data); }
       return next;
     });
+  }
+
+  const [corrigindoId, setCorrigindoId] = useState<number | null>(null);
+
+  async function corrigirData(arq: { id: number; nome_arquivo: string }) {
+    const ok = window.confirm(
+      `Remover o registro mal-datado de "${arq.nome_arquivo}"?\n\n` +
+      `Os dados gravados na data errada serão apagados e o hash liberado. ` +
+      `Em seguida, reenvie o arquivo na tela de Upload para reimportar na data correta.\n\n` +
+      `A operação é bloqueada se a data atual tiver outro arquivo (para não afetar aquele dia).`,
+    );
+    if (!ok) return;
+    setCorrigindoId(arq.id);
+    setErro(null);
+    try {
+      const r = await importacaoApi.corrigirDataArquivo(
+        arq.id,
+        needsInstituicao ? selectedId : undefined,
+      );
+      await buscar();
+      window.alert(r.mensagem ?? 'Registro removido. Reenvie o arquivo na tela de Upload.');
+    } catch (e: unknown) {
+      const msg =
+        (e as { response?: { data?: { message?: string; mensagem?: string } } })?.response?.data;
+      setErro(msg?.message ?? msg?.mensagem ?? 'Não foi possível corrigir. Tente manualmente.');
+    } finally {
+      setCorrigindoId(null);
+    }
   }
 
   const anos = Array.from({ length: 3 }, (_, i) => mesAtual().ano - i);
@@ -184,6 +212,8 @@ export default function HistoricoUploadPage() {
                     dia={dia}
                     expandido={expandidos.has(dia.data_referencia)}
                     onToggle={() => toggleDia(dia.data_referencia)}
+                    onCorrigir={corrigirData}
+                    corrigindoId={corrigindoId}
                   />
                 ))}
               </div>
@@ -219,8 +249,10 @@ function ResumoCard({ label, value, color }: {
   );
 }
 
-function DiaCard({ dia, expandido, onToggle }: {
+function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId }: {
   dia: DiaUpload; expandido: boolean; onToggle: () => void;
+  onCorrigir: (arq: { id: number; nome_arquivo: string }) => void;
+  corrigindoId: number | null;
 }) {
   const isCompleto = dia.status_dia === 'COMPLETO';
 
@@ -273,14 +305,25 @@ function DiaCard({ dia, expandido, onToggle }: {
                   {arq.tipo_relatorio ? TIPO_LABEL[arq.tipo_relatorio] ?? arq.tipo_relatorio : '—'}
                 </p>
                 {arq.data_divergente && (
-                  <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
-                    <AlertTriangle size={12} className="flex-shrink-0" />
-                    <span>
-                      Data divergente: o nome indica{' '}
-                      <strong>{fmtDataNome(arq.data_nome_arquivo)}</strong>, mas foi gravado neste dia.
-                      Reimporte para corrigir.
-                    </span>
-                  </p>
+                  <div className="mt-1 space-y-1">
+                    <p className="flex items-center gap-1 text-xs text-red-600">
+                      <AlertTriangle size={12} className="flex-shrink-0" />
+                      <span>
+                        Data divergente: o nome indica{' '}
+                        <strong>{fmtDataNome(arq.data_nome_arquivo)}</strong>, mas foi gravado neste dia.
+                      </span>
+                    </p>
+                    <button
+                      onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo })}
+                      disabled={corrigindoId === arq.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 border border-red-200 rounded-md px-2 py-1 transition-colors"
+                    >
+                      {corrigindoId === arq.id
+                        ? <Loader2 size={12} className="animate-spin" />
+                        : <RefreshCw size={12} />}
+                      Corrigir data (apagar e reenviar)
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="text-right flex-shrink-0">

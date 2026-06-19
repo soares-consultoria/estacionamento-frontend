@@ -476,4 +476,16 @@ export const importacaoApi = {
     api.get<HistoricoUpload>('/api/importacao/historico', {
       params: { ano, mes, ...(instituicaoId ? { instituicaoId } : {}) },
     }).then(r => r.data),
+
+  /**
+   * Apaga com segurança um arquivo mal-datado (data divergente) para que possa ser
+   * reenviado e reimportado na data correta. Falha (409/erro de negócio) se a data
+   * atual não for um dia-fantasma — protegendo os fatos compartilhados.
+   */
+  corrigirDataArquivo: (id: number, instituicaoId?: number | null) =>
+    api.post<{ removido: string; reenviar: boolean; mensagem: string }>(
+      `/api/admin/manutencao/arquivo/${id}/corrigir-data`,
+      null,
+      { params: instituicaoId ? { instituicaoId } : undefined },
+    ).then(r => r.data),
 };
