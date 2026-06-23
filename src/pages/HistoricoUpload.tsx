@@ -101,8 +101,11 @@ export default function HistoricoUploadPage() {
   }
 
   const [corrigindoId, setCorrigindoId] = useState<number | null>(null);
+  // Dia bloqueado para correção simples (tem outro arquivo legítimo) → oferece apagar o dia.
+  const [bloqueioDia, setBloqueioDia] = useState<{ data: string; nome: string } | null>(null);
+  const [apagandoDia, setApagandoDia] = useState(false);
 
-  async function corrigirData(arq: { id: number; nome_arquivo: string }) {
+  async function corrigirData(arq: { id: number; nome_arquivo: string; data_referencia: string | null }) {
     const ok = window.confirm(
       `Remover o registro mal-datado de "${arq.nome_arquivo}"?\n\n` +
       `Os dados gravados na data errada serão apagados e o hash liberado. ` +
@@ -112,6 +115,7 @@ export default function HistoricoUploadPage() {
     if (!ok) return;
     setCorrigindoId(arq.id);
     setErro(null);
+    setBloqueioDia(null);
     try {
       const r = await importacaoApi.corrigirDataArquivo(
         arq.id,
@@ -121,11 +125,49 @@ export default function HistoricoUploadPage() {
       await carregarMalDatados();
       window.alert(r.mensagem ?? 'Registro removido. Reenvie o arquivo na tela de Upload.');
     } catch (e: unknown) {
-      const msg =
+      const data =
         (e as { response?: { data?: { message?: string; mensagem?: string } } })?.response?.data;
-      setErro(msg?.message ?? msg?.mensagem ?? 'Não foi possível corrigir. Tente manualmente.');
+      const msg = data?.message ?? data?.mensagem ?? 'Não foi possível corrigir. Tente manualmente.';
+      setErro(msg);
+      // Dia compartilhado (tem outro arquivo): oferece apagar o dia inteiro e reenviar.
+      if (/possui outro|manualmente/i.test(msg) && arq.data_referencia) {
+        setBloqueioDia({ data: arq.data_referencia, nome: arq.nome_arquivo });
+      }
     } finally {
       setCorrigindoId(null);
+    }
+  }
+
+  async function apagarDiaInteiro() {
+    if (!bloqueioDia) return;
+    const dataFmt = fmtDataNome(bloqueioDia.data);
+    const ok = window.confirm(
+      `APAGAR TODOS os arquivos de ${dataFmt} (REM e RFE) e seus dados?\n\n` +
+      `Isso limpa o dia inteiro e libera os hashes. Você precisará REENVIAR cada ` +
+      `arquivo desse dia na tela de Upload para reimportar nas datas corretas.\n\n` +
+      `Tenha os arquivos em mãos antes de continuar.`,
+    );
+    if (!ok) return;
+    setApagandoDia(true);
+    setErro(null);
+    try {
+      const r = await importacaoApi.apagarDia(
+        bloqueioDia.data,
+        needsInstituicao ? selectedId : undefined,
+      );
+      await buscar();
+      await carregarMalDatados();
+      setBloqueioDia(null);
+      window.alert(
+        `${r.removidos} arquivo(s) removido(s) de ${dataFmt}.\n\n` +
+        `Agora reenvie os arquivos na tela de Upload (cada um vai para a data correta do nome).`,
+      );
+    } catch (e: unknown) {
+      const data =
+        (e as { response?: { data?: { message?: string; mensagem?: string } } })?.response?.data;
+      setErro(data?.message ?? data?.mensagem ?? 'Não foi possível apagar o dia.');
+    } finally {
+      setApagandoDia(false);
     }
   }
 
@@ -186,6 +228,30 @@ export default function HistoricoUploadPage() {
           <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
             <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
             <span>{erro}</span>
+          </div>
+        )}
+
+        {/* Correção bloqueada (dia compartilhado) → oferece apagar o dia inteiro */}
+        {bloqueioDia && (
+          <div className="border border-red-300 bg-red-50 rounded-xl p-4 space-y-2">
+            <p className="text-sm font-bold text-red-800">
+              {fmtDataNome(bloqueioDia.data)} tem outro arquivo legítimo
+            </p>
+            <p className="text-xs text-red-700">
+              Não dá para remover só "{bloqueioDia.nome}" sem afetar o outro arquivo do dia
+              (os dados são compartilhados por data). Para corrigir, apague o dia inteiro e
+              reenvie cada arquivo — eles voltam para as datas corretas do nome.
+            </p>
+            <button
+              onClick={apagarDiaInteiro}
+              disabled={apagandoDia}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-md px-3 py-1.5 transition-colors"
+            >
+              {apagandoDia
+                ? <Loader2 size={13} className="animate-spin" />
+                : <AlertTriangle size={13} />}
+              Apagar {fmtDataNome(bloqueioDia.data)} inteiro e reenviar
+            </button>
           </div>
         )}
 
@@ -256,7 +322,7 @@ export default function HistoricoUploadPage() {
 
 function MalDatadosPanel({ itens, onCorrigir, corrigindoId }: {
   itens: ArquivoUploadItem[];
-  onCorrigir: (arq: { id: number; nome_arquivo: string }) => void;
+  onCorrigir: (arq: { id: number; nome_arquivo: string; data_referencia: string | null }) => void;
   corrigindoId: number | null;
 }) {
   return (
@@ -285,7 +351,7 @@ function MalDatadosPanel({ itens, onCorrigir, corrigindoId }: {
               </p>
             </div>
             <button
-              onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo })}
+              onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo, data_referencia: arq.data_referencia })}
               disabled={corrigindoId === arq.id}
               className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 border border-red-200 rounded-md px-2 py-1 transition-colors flex-shrink-0"
             >
@@ -324,7 +390,7 @@ function ResumoCard({ label, value, color }: {
 
 function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId }: {
   dia: DiaUpload; expandido: boolean; onToggle: () => void;
-  onCorrigir: (arq: { id: number; nome_arquivo: string }) => void;
+  onCorrigir: (arq: { id: number; nome_arquivo: string; data_referencia: string | null }) => void;
   corrigindoId: number | null;
 }) {
   const isCompleto = dia.status_dia === 'COMPLETO';
@@ -387,7 +453,7 @@ function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId }: {
                       </span>
                     </p>
                     <button
-                      onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo })}
+                      onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo, data_referencia: arq.data_referencia })}
                       disabled={corrigindoId === arq.id}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 border border-red-200 rounded-md px-2 py-1 transition-colors"
                     >

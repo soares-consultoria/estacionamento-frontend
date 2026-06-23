@@ -492,6 +492,18 @@ export const importacaoApi = {
     ).then(r => r.data),
 
   /**
+   * Apaga TODOS os arquivos de uma data (REM + RFE) e seus dados/fatos, liberando os
+   * hashes. Usado quando a correção simples é bloqueada por o dia ter outro arquivo
+   * legítimo (fatos compartilhados): limpa o dia para reenviar cada um na data certa.
+   */
+  apagarDia: (data: string, instituicaoId?: number | null) =>
+    api.post<{ removidos: number; arquivos: string[]; reenviar: boolean; mensagem: string }>(
+      '/api/admin/manutencao/dia/apagar',
+      null,
+      { params: { data, ...(instituicaoId ? { instituicaoId } : {}) } },
+    ).then(r => r.data),
+
+  /**
    * Lista, em todas as datas, os arquivos mal-datados (data gravada ≠ data do nome).
    * Usado para localizar de uma vez onde cada arquivo caiu.
    */
