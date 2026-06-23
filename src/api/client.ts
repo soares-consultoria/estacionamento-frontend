@@ -431,6 +431,8 @@ export interface ArquivoUploadItem {
   status_processamento: ArquivoProcessadoStatus;
   criado_em: string;
   finalizado_em: string | null;
+  /** Data em que o registro foi gravado (data_referencia); onde o arquivo "caiu". */
+  data_referencia: string | null;
   /** Data extraída do nome do arquivo (fonte autoritativa); null se não parseável. */
   data_nome_arquivo: string | null;
   /** true quando a data gravada diverge da data do nome do arquivo (registro mal-datado). */
@@ -488,4 +490,13 @@ export const importacaoApi = {
       null,
       { params: instituicaoId ? { instituicaoId } : undefined },
     ).then(r => r.data),
+
+  /**
+   * Lista, em todas as datas, os arquivos mal-datados (data gravada ≠ data do nome).
+   * Usado para localizar de uma vez onde cada arquivo caiu.
+   */
+  arquivosMalDatados: (instituicaoId?: number | null) =>
+    api.get<ArquivoUploadItem[]>('/api/importacao/historico/mal-datados', {
+      params: instituicaoId ? { instituicaoId } : undefined,
+    }).then(r => r.data),
 };

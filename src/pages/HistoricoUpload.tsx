@@ -3,7 +3,7 @@ import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronRight,
   FileText, Loader2, RefreshCw, SearchX,
 } from 'lucide-react';
-import { importacaoApi, type DiaUpload, type HistoricoUpload } from '../api/client';
+import { importacaoApi, type ArquivoUploadItem, type DiaUpload, type HistoricoUpload } from '../api/client';
 import { InstituicaoContext } from '../contexts/InstituicaoContext';
 import { useAuth } from '../hooks/useAuth';
 
@@ -46,8 +46,21 @@ export default function HistoricoUploadPage() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set());
+  const [malDatados, setMalDatados] = useState<ArquivoUploadItem[]>([]);
 
   const canSearch = !needsInstituicao || !!selectedId;
+
+  async function carregarMalDatados() {
+    if (!canSearch) return;
+    try {
+      const lista = await importacaoApi.arquivosMalDatados(
+        needsInstituicao ? selectedId : undefined,
+      );
+      setMalDatados(lista);
+    } catch {
+      // silencioso: o painel é auxiliar e não deve quebrar a tela
+    }
+  }
 
   async function buscar() {
     if (!canSearch) return;
@@ -73,7 +86,10 @@ export default function HistoricoUploadPage() {
 
   // Busca automática ao montar (ou ao selectedId carregar para admins)
   useEffect(() => {
-    if (canSearch) buscar();
+    if (canSearch) {
+      buscar();
+      carregarMalDatados();
+    }
   }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleDia(data: string) {
@@ -102,6 +118,7 @@ export default function HistoricoUploadPage() {
         needsInstituicao ? selectedId : undefined,
       );
       await buscar();
+      await carregarMalDatados();
       window.alert(r.mensagem ?? 'Registro removido. Reenvie o arquivo na tela de Upload.');
     } catch (e: unknown) {
       const msg =
@@ -172,6 +189,15 @@ export default function HistoricoUploadPage() {
           </div>
         )}
 
+        {/* Localizador de arquivos mal-datados (todas as datas) */}
+        {malDatados.length > 0 && (
+          <MalDatadosPanel
+            itens={malDatados}
+            onCorrigir={corrigirData}
+            corrigindoId={corrigindoId}
+          />
+        )}
+
         {/* Aguardando instituição */}
         {needsInstituicao && !selectedId && (
           <div className="flex items-center gap-2 text-slate-400 text-sm py-8 justify-center">
@@ -227,6 +253,53 @@ export default function HistoricoUploadPage() {
 }
 
 /* ─── Componentes internos ─── */
+
+function MalDatadosPanel({ itens, onCorrigir, corrigindoId }: {
+  itens: ArquivoUploadItem[];
+  onCorrigir: (arq: { id: number; nome_arquivo: string }) => void;
+  corrigindoId: number | null;
+}) {
+  return (
+    <div className="border border-red-200 bg-red-50 rounded-xl overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-red-200">
+        <AlertTriangle size={18} className="text-red-600 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-red-800">
+            {itens.length} arquivo{itens.length !== 1 ? 's' : ''} mal-datado{itens.length !== 1 ? 's' : ''}
+          </p>
+          <p className="text-xs text-red-600">
+            Importação antiga gravou a data errada — o arquivo "sumiu" do dia correto. Corrija e reenvie.
+          </p>
+        </div>
+      </div>
+      <div className="divide-y divide-red-100 bg-white">
+        {itens.map(arq => (
+          <div key={arq.id} className="flex items-start gap-3 px-4 py-3">
+            <FileText size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-700 truncate">{arq.nome_arquivo}</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Deveria estar em <strong className="text-slate-700">{fmtDataNome(arq.data_nome_arquivo)}</strong>
+                {' '}· gravado em{' '}
+                <strong className="text-red-600">{fmtDataNome(arq.data_referencia)}</strong>
+              </p>
+            </div>
+            <button
+              onClick={() => onCorrigir({ id: arq.id, nome_arquivo: arq.nome_arquivo })}
+              disabled={corrigindoId === arq.id}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 border border-red-200 rounded-md px-2 py-1 transition-colors flex-shrink-0"
+            >
+              {corrigindoId === arq.id
+                ? <Loader2 size={12} className="animate-spin" />
+                : <RefreshCw size={12} />}
+              Corrigir data
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ResumoCard({ label, value, color }: {
   label: string; value: number; color: 'slate' | 'green' | 'amber';
