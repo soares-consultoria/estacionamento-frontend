@@ -16,6 +16,7 @@ beforeAll(() => {
 // Mock dos módulos de API para isolar o componente
 vi.mock('../api/importacaoHashApi', () => ({
   checkHash: vi.fn().mockResolvedValue('new'),
+  infoHash: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('../api/client', () => ({
@@ -130,6 +131,32 @@ describe('UploadEmLote', () => {
     // Não deve marcar como Erro
     expect(screen.queryByText(/^Erro$/)).not.toBeInTheDocument();
   }, 10000);
+
+  it('ao duplicar, revela onde o conteúdo já está gravado (nome + data + tipo)', async () => {
+    const { checkHash, infoHash } = await import('../api/importacaoHashApi');
+    vi.mocked(checkHash).mockResolvedValueOnce('duplicate');
+    vi.mocked(infoHash).mockResolvedValueOnce({
+      existe: true,
+      id: 99,
+      nome_arquivo: 'REL. WPS 17-06-2026.pdf',
+      data_referencia: '2026-06-17',
+      tipo_relatorio: 'FINANCEIRO_ESTATISTICO',
+      status_processamento: 'PROCESSADO',
+    });
+
+    render(<UploadEmLote />);
+    const dropZone = screen.getByText(/Arraste PDFs/i).parentElement!;
+    fireEvent.drop(dropZone, { dataTransfer: { files: [makePdf('REL. WPS 18-06-2026.pdf')] } });
+
+    await waitFor(() => screen.getByText('REL. WPS 18-06-2026.pdf'));
+    fireEvent.click(screen.getByRole('button', { name: /Enviar/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Já existe como "REL\. WPS 17-06-2026\.pdf" em 17\/06\/2026 \(RFE\)/i),
+      ).toBeInTheDocument();
+    });
+  });
 
   it('exibe badge "Processado" após upload bem-sucedido', async () => {
     render(<UploadEmLote />);

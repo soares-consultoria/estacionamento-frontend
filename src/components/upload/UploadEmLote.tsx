@@ -11,7 +11,7 @@ import {
   Loader2, Plus, RefreshCw, XCircle,
 } from 'lucide-react';
 import { sha256File } from '../../lib/sha256';
-import { checkHash } from '../../api/importacaoHashApi';
+import { checkHash, infoHash } from '../../api/importacaoHashApi';
 import { importacaoApi } from '../../api/client';
 import { inferirTipo, TIPO_LABEL, type TipoRelatorioHint } from './HeuristicaTipo';
 
@@ -54,6 +54,18 @@ const POLL_MAX_TENTATIVAS = 360; // ~30 min (cobre retries longos de rate limit 
 function uid() {
   return Math.random().toString(36).slice(2);
 }
+
+/** "2026-06-18" → "18/06/2026". */
+function fmtDataIso(iso: string | null): string | null {
+  if (!iso) return null;
+  const [ano, mes, dia] = iso.split('T')[0].split('-');
+  return dia ? `${dia}/${mes}/${ano}` : iso;
+}
+
+const TIPO_SIGLA: Record<string, string> = {
+  FINANCEIRO_ESTATISTICO: 'RFE',
+  EST_MOVIMENTACAO: 'REM',
+};
 
 /** Mensagem de erro do backend indica duplicidade por data (não falha real). */
 function ehDuplicidade(msg: string | null): boolean {
@@ -212,7 +224,22 @@ export default function UploadEmLote({ instituicaoId, onLoteConcluido }: Props) 
     patch(item.id, { status: 'checking', progress: 25 });
     const checkResult = await checkHash(hash, instituicaoId);
     if (checkResult === 'duplicate') {
-      patch(item.id, { status: 'duplicate', mensagem: 'Arquivo já processado anteriormente' });
+      // Revela ONDE o mesmo conteúdo já está gravado (nome + data + tipo),
+      // ajudando a localizar duplicados mal-nomeados/mal-datados.
+      let msg = 'Arquivo já processado anteriormente';
+      const info = await infoHash(hash, instituicaoId);
+      if (info?.existe) {
+        const data = fmtDataIso(info.data_referencia);
+        const tipo = info.tipo_relatorio
+          ? TIPO_SIGLA[info.tipo_relatorio] ?? info.tipo_relatorio
+          : null;
+        const partes: string[] = [];
+        if (info.nome_arquivo) partes.push(`"${info.nome_arquivo}"`);
+        if (data) partes.push(`em ${data}`);
+        if (tipo) partes.push(`(${tipo})`);
+        if (partes.length) msg = `Já existe como ${partes.join(' ')}`;
+      }
+      patch(item.id, { status: 'duplicate', mensagem: msg });
       return;
     }
     // 'error' no HEAD → não bloquear; tentamos enviar mesmo assim

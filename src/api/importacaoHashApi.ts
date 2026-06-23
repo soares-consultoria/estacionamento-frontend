@@ -31,3 +31,31 @@ export async function checkHash(
     return 'error';
   }
 }
+
+/** Detalhes do registro existente com o mesmo conteúdo (hash). */
+export interface DuplicadoInfo {
+  existe: boolean;
+  id: number | null;
+  nome_arquivo: string | null;
+  data_referencia: string | null;
+  tipo_relatorio: string | null;
+  status_processamento: string | null;
+}
+
+/**
+ * Busca ONDE um conteúdo já está gravado (quando o upload é bloqueado como
+ * duplicado). Retorna null em erro — é informativo e não deve quebrar o fluxo.
+ */
+export async function infoHash(
+  sha256: string,
+  instituicaoId?: number | null,
+): Promise<DuplicadoInfo | null> {
+  try {
+    const r = await api.get<DuplicadoInfo>(`/api/importacao/hash/${sha256}`, {
+      params: instituicaoId ? { instituicaoId } : undefined,
+    });
+    return r.data;
+  } catch {
+    return null;
+  }
+}
