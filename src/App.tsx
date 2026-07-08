@@ -123,7 +123,7 @@ function AppLayout() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <AuthProvider>
           <InstituicaoProvider>
             <Routes>
