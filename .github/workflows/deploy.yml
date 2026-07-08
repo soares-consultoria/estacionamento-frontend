@@ -34,12 +34,14 @@ jobs:
           aws-region: us-east-2
 
       - name: Deploy para S3
+        # App servido sob o path /estacionamento → objetos vão para o prefixo estacionamento/.
+        # O --delete só afeta esse prefixo (não apaga o restante do bucket).
         run: |
-          aws s3 sync dist/ s3://estacionamento-prod-frontend/ \
+          aws s3 sync dist/ s3://estacionamento-prod-frontend/estacionamento/ \
             --delete \
             --cache-control "no-cache" \
             --exclude "assets/*"
-          aws s3 sync dist/assets/ s3://estacionamento-prod-frontend/assets/ \
+          aws s3 sync dist/assets/ s3://estacionamento-prod-frontend/estacionamento/assets/ \
             --delete \
             --cache-control "public, max-age=31536000, immutable"
 
@@ -47,4 +49,4 @@ jobs:
         run: |
           aws cloudfront create-invalidation \
             --distribution-id E27IA6ZQXLDK7D \
-            --paths "/*"
+            --paths "/estacionamento/*"

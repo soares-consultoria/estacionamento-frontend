@@ -37,7 +37,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('auth');
-      window.location.href = '/login';
+      // Respeita o base path (ex.: /estacionamento/) — BASE_URL termina com '/'.
+      window.location.href = `${import.meta.env.BASE_URL}login`;
     }
     if (error.response?.status === 403 && error.response?.data?.erro === 'PLANO_NAO_PERMITIDO') {
       return Promise.reject(new Error(error.response.data.mensagem ?? 'Funcionalidade não disponível no seu plano atual.'));

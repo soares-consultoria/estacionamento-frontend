@@ -1,4 +1,5 @@
 import { FeatureGate } from '../components/FeatureGate';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { dashboardApi, type Previsao } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -148,7 +149,7 @@ export default function PrevisaoPage() {
             <div className="bg-slate-50 rounded-xl border border-slate-100 p-4">
               <p className="text-sm text-slate-600">
                 Use esta previsão como referência ao definir as{' '}
-                <a href="/metas" className="text-blue-600 hover:underline font-medium">metas mensais</a>{' '}
+                <Link to="/metas" className="text-blue-600 hover:underline font-medium">metas mensais</Link>{' '}
                 de {dados.mes_nome}/{dados.ano_previsao}.
               </p>
             </div>
