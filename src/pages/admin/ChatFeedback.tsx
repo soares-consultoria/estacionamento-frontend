@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { MessageSquare, ThumbsDown, ThumbsUp } from 'lucide-react';
-import { obterResumoFeedback, type FeedbackResumo } from '../../api/chatAi';
+import { Download, MessageSquare, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { exportarFeedback, obterResumoFeedback, type FeedbackResumo } from '../../api/chatAi';
 
 function pct(v: number | null): string {
   return v == null ? '—' : `${Math.round(v * 100)}%`;
@@ -8,13 +8,21 @@ function pct(v: number | null): string {
 
 function dataBr(iso: string): string {
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+/** Escapa um campo para CSV (aspas duplas, quebras de linha, ponto-e-vírgula). */
+function csvCampo(v: string | number | null): string {
+  const s = v == null ? '' : String(v);
+  return `"${s.replace(/"/g, '""')}"`;
 }
 
 export default function ChatFeedbackPage() {
   const [resumo, setResumo] = useState<FeedbackResumo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportando, setExportando] = useState(false);
 
   useEffect(() => {
     let vivo = true;
@@ -28,12 +36,51 @@ export default function ChatFeedbackPage() {
     };
   }, []);
 
+  async function handleExport() {
+    setExportando(true);
+    setError(null);
+    try {
+      const itens = await exportarFeedback();
+      const cabecalho = ['Avaliacao', 'Pergunta', 'Resposta', 'Data'];
+      const linhas = itens.map((i) => [
+        i.feedback === 1 ? '👍 Positivo' : '👎 Negativo',
+        i.pergunta ?? '',
+        i.resposta,
+        dataBr(i.criado_em),
+      ].map(csvCampo).join(';'));
+      // BOM p/ Excel abrir acentos corretamente
+      const csv = '﻿' + [cabecalho.map(csvCampo).join(';'), ...linhas].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `feedback-assistente-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError('Não foi possível exportar o feedback.');
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return (
     <div className="p-4 sm:p-6 h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-1">
-          <MessageSquare size={22} className="text-blue-500" />
-          <h1 className="text-xl font-bold text-slate-800">Feedback do Assistente</h1>
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-3 min-w-0">
+            <MessageSquare size={22} className="text-blue-500 flex-shrink-0" />
+            <h1 className="text-xl font-bold text-slate-800">Feedback do Assistente</h1>
+          </div>
+          <button
+            onClick={handleExport}
+            disabled={exportando || !resumo || resumo.avaliadas === 0}
+            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+            title="Exportar as respostas avaliadas (CSV)"
+          >
+            <Download size={16} />
+            {exportando ? 'Exportando...' : 'Exportar CSV'}
+          </button>
         </div>
         <p className="text-sm text-slate-500 mb-6">
           Avaliações 👍/👎 das respostas do assistente — base para melhorar a qualidade ao longo do tempo.
@@ -51,8 +98,8 @@ export default function ChatFeedbackPage() {
           <>
             {/* KPIs */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <Kpi titulo="Taxa de aprovação" valor={pct(resumo.taxaAprovacao)} destaque />
-              <Kpi titulo="Respostas avaliadas" valor={`${resumo.avaliadas}`} sub={`de ${resumo.totalRespostas} (${pct(resumo.percentualAvaliado)})`} />
+              <Kpi titulo="Taxa de aprovação" valor={pct(resumo.taxa_aprovacao)} destaque />
+              <Kpi titulo="Respostas avaliadas" valor={`${resumo.avaliadas}`} sub={`de ${resumo.total_respostas} (${pct(resumo.percentual_avaliado)})`} />
               <Kpi titulo="👍 Positivos" valor={`${resumo.positivos}`} cor="text-green-600" />
               <Kpi titulo="👎 Negativos" valor={`${resumo.negativos}`} cor="text-red-500" />
             </div>
@@ -71,17 +118,20 @@ export default function ChatFeedbackPage() {
                 </div>
               ) : (
                 <ul className="divide-y divide-slate-100">
-                  {resumo.piores.map((p) => (
-                    <li key={p.mensagemId} className="px-5 py-3">
-                      {p.titulo && (
-                        <p className="text-xs font-medium text-slate-500 mb-1">
-                          Pergunta: <span className="text-slate-700">{p.titulo}</span>
-                        </p>
-                      )}
-                      <p className="text-sm text-slate-800 whitespace-pre-wrap break-words line-clamp-4">{p.conteudo}</p>
-                      <p className="text-xs text-slate-400 mt-1">{dataBr(p.criadoEm)}</p>
-                    </li>
-                  ))}
+                  {resumo.piores.map((p) => {
+                    const pergunta = p.pergunta ?? p.titulo;
+                    return (
+                      <li key={p.mensagem_id} className="px-5 py-3">
+                        {pergunta && (
+                          <p className="text-xs font-medium text-slate-500 mb-1">
+                            Pergunta: <span className="text-slate-700">{pergunta}</span>
+                          </p>
+                        )}
+                        <p className="text-sm text-slate-800 whitespace-pre-wrap break-words line-clamp-4">{p.conteudo}</p>
+                        <p className="text-xs text-slate-400 mt-1">{dataBr(p.criado_em)}</p>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

@@ -39,22 +39,32 @@ export interface DonePayload {
   percentualCota: number | null;
 }
 
+// Backend usa property-naming SNAKE_CASE (ver JacksonConfig) — os campos abaixo
+// refletem o JSON real das respostas.
 export interface FeedbackNegativo {
-  mensagemId: number;
-  conversaId: string;
+  mensagem_id: number;
+  conversa_id: string;
   titulo: string | null;
+  pergunta: string | null;
   conteudo: string;
-  criadoEm: string;
+  criado_em: string;
 }
 
 export interface FeedbackResumo {
-  totalRespostas: number;
+  total_respostas: number;
   avaliadas: number;
   positivos: number;
   negativos: number;
-  taxaAprovacao: number | null;
-  percentualAvaliado: number | null;
+  taxa_aprovacao: number | null;
+  percentual_avaliado: number | null;
   piores: FeedbackNegativo[];
+}
+
+export interface FeedbackExportItem {
+  feedback: number; // 1 = 👍, -1 = 👎
+  pergunta: string | null;
+  resposta: string;
+  criado_em: string;
 }
 
 export interface StreamCallbacks {
@@ -81,6 +91,11 @@ export async function obterUso(): Promise<Uso> {
 /** Registra 👍/👎 numa resposta. valor: 1 = 👍, -1 = 👎, 0 = limpar. */
 export async function avaliarMensagem(mensagemId: number, valor: number): Promise<void> {
   await api.put(`/api/chat-ai/mensagens/${mensagemId}/feedback`, { valor });
+}
+
+export async function exportarFeedback(): Promise<FeedbackExportItem[]> {
+  const { data } = await api.get<FeedbackExportItem[]>('/api/chat-ai/feedback/export');
+  return data;
 }
 
 export async function obterResumoFeedback(): Promise<FeedbackResumo> {
