@@ -6,7 +6,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { InstituicaoProvider } from './contexts/InstituicaoContext';
 import { useAuth } from './hooks/useAuth';
 import { useInstituicao } from './hooks/useInstituicao';
-import { usePlano } from './hooks/usePlano';
 import ChatAiWidget from './components/chatai/ChatAiWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
@@ -55,7 +54,6 @@ function AppLayout() {
   const { user, logout } = useAuth();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
   const { selectedId } = useInstituicao();
-  const { temAcesso } = usePlano();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
@@ -120,7 +118,8 @@ function AppLayout() {
         </main>
       </div>
 
-      {temAcesso('chat-ai') && <ChatAiWidget />}
+      {/* Fase 1: chat AI visível só para SISTEMA_ADMIN. Depois: usePlano().temAcesso('chat-ai'). */}
+      {user?.role === 'SISTEMA_ADMIN' && <ChatAiWidget />}
     </div>
   );
 }
