@@ -7,6 +7,15 @@ const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julh
 const BRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const INT = (v: number) => v.toLocaleString('pt-BR');
 
+function OrigemBadge({ origem }: { origem: 'chat' | 'pdf' }) {
+  const chat = origem === 'chat';
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${chat ? 'bg-violet-100 text-violet-700' : 'bg-amber-100 text-amber-700'}`}>
+      {chat ? 'Assistente' : 'Extração PDF'}
+    </span>
+  );
+}
+
 export default function ConsumoIAPage() {
   const agora = new Date();
   const [ano, setAno] = useState(agora.getFullYear());
@@ -65,7 +74,7 @@ export default function ConsumoIAPage() {
           </div>
         </div>
         <p className="text-sm text-slate-500 mb-6">
-          Tokens consumidos por instituição, com custo (OpenAI), preço ao cliente e margem.
+          Tokens consumidos por instituição e origem (Assistente e extração de PDF), com custo (OpenAI), preço ao cliente e margem.
         </p>
 
         {error && (
@@ -76,7 +85,6 @@ export default function ConsumoIAPage() {
           <p className="text-slate-400 text-sm text-center py-8">Carregando...</p>
         ) : resumo ? (
           <>
-            {/* Cabeçalho de precificação */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
               <Kpi titulo="Preço do mês" valor={BRL(resumo.totais.preco_brl)} destaque />
               <Kpi titulo="Custo (OpenAI)" valor={BRL(resumo.totais.custo_brl)} />
@@ -91,6 +99,7 @@ export default function ConsumoIAPage() {
                     <tr className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       <th className="text-left px-4 py-3">Conta</th>
                       <th className="text-left px-4 py-3">Instituição</th>
+                      <th className="text-left px-4 py-3">Origem</th>
                       <th className="text-right px-4 py-3">Requisições</th>
                       <th className="text-right px-4 py-3">Tokens</th>
                       <th className="text-right px-4 py-3">Custo</th>
@@ -99,28 +108,29 @@ export default function ConsumoIAPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {resumo.instituicoes.length === 0 ? (
+                    {resumo.linhas.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td>
+                        <td colSpan={8} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td>
                       </tr>
                     ) : (
-                      resumo.instituicoes.map((i) => (
-                        <tr key={i.instituicao_id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-slate-500">{i.conta_nome}</td>
-                          <td className="px-4 py-3 font-medium text-slate-800">{i.instituicao_nome}</td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(i.requisicoes)}</td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(i.tokens_total)}</td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(i.custo_brl)}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(i.preco_brl)}</td>
-                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(i.margem_brl)}</td>
+                      resumo.linhas.map((l) => (
+                        <tr key={`${l.instituicao_id}-${l.origem}`} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-slate-500">{l.conta_nome}</td>
+                          <td className="px-4 py-3 font-medium text-slate-800">{l.instituicao_nome}</td>
+                          <td className="px-4 py-3"><OrigemBadge origem={l.origem} /></td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.requisicoes)}</td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.tokens_total)}</td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(l.custo_brl)}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(l.preco_brl)}</td>
+                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(l.margem_brl)}</td>
                         </tr>
                       ))
                     )}
                   </tbody>
-                  {resumo.instituicoes.length > 0 && (
+                  {resumo.linhas.length > 0 && (
                     <tfoot>
                       <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-800">
-                        <td className="px-4 py-3" colSpan={2}>Total</td>
+                        <td className="px-4 py-3" colSpan={3}>Total</td>
                         <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.requisicoes)}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.tokens_total)}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{BRL(resumo.totais.custo_brl)}</td>
@@ -134,7 +144,7 @@ export default function ConsumoIAPage() {
             </div>
 
             <p className="text-xs text-slate-400 mt-3">
-              Precificação: preço = custo × {resumo.markup} (markup) · câmbio USD→BRL {BRL(resumo.usd_to_brl)}. Custo estimado pelas tarifas públicas da OpenAI por modelo.
+              Precificação: preço = custo × {resumo.markup} (markup) · câmbio USD→BRL {BRL(resumo.usd_to_brl)} ({resumo.fonte_cambio}). Custo estimado pelas tarifas públicas da OpenAI por modelo.
             </p>
           </>
         ) : null}
