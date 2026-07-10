@@ -28,6 +28,7 @@ import EsqueciSenhaPage from './pages/EsqueciSenha';
 import ResetSenhaPage from './pages/ResetSenha';
 import PlanoGestaoPage from './pages/admin/PlanoGestao';
 import ContasPage from './pages/admin/Contas';
+import ChatFeedbackPage from './pages/admin/ChatFeedback';
 
 function InstituicaoSelector() {
   const { instituicoes, selectedId, setSelectedId } = useInstituicao();
@@ -114,6 +115,7 @@ function AppLayout() {
             <Route path="/previsao" element={<ProtectedRoute><PrevisaoPage /></ProtectedRoute>} />
             <Route path="/admin/planos" element={<ProtectedRoute><PlanoGestaoPage /></ProtectedRoute>} />
             <Route path="/admin/contas" element={<ProtectedRoute><ContasPage /></ProtectedRoute>} />
+            <Route path="/admin/chat-feedback" element={<ProtectedRoute><ChatFeedbackPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

@@ -7,9 +7,11 @@ export interface ConversaResumo {
 }
 
 export interface Mensagem {
+  id?: number;
   papel: 'user' | 'assistant';
   conteudo: string;
   criadoEm: string;
+  feedback?: number | null; // 1 = 👍, -1 = 👎, null/undefined = sem avaliação
 }
 
 export interface ConversaDetalhe {
@@ -31,9 +33,28 @@ export interface Uso {
 
 export interface DonePayload {
   conversaId: string;
+  mensagemId: number;
   tokensPrompt: number;
   tokensCompletion: number;
   percentualCota: number | null;
+}
+
+export interface FeedbackNegativo {
+  mensagemId: number;
+  conversaId: string;
+  titulo: string | null;
+  conteudo: string;
+  criadoEm: string;
+}
+
+export interface FeedbackResumo {
+  totalRespostas: number;
+  avaliadas: number;
+  positivos: number;
+  negativos: number;
+  taxaAprovacao: number | null;
+  percentualAvaliado: number | null;
+  piores: FeedbackNegativo[];
 }
 
 export interface StreamCallbacks {
@@ -54,6 +75,16 @@ export async function obterConversa(id: string): Promise<ConversaDetalhe> {
 
 export async function obterUso(): Promise<Uso> {
   const { data } = await api.get<Uso>('/api/chat-ai/uso');
+  return data;
+}
+
+/** Registra 👍/👎 numa resposta. valor: 1 = 👍, -1 = 👎, 0 = limpar. */
+export async function avaliarMensagem(mensagemId: number, valor: number): Promise<void> {
+  await api.put(`/api/chat-ai/mensagens/${mensagemId}/feedback`, { valor });
+}
+
+export async function obterResumoFeedback(): Promise<FeedbackResumo> {
+  const { data } = await api.get<FeedbackResumo>('/api/chat-ai/feedback/resumo');
   return data;
 }
 

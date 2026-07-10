@@ -2,13 +2,14 @@ import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ChatAiWidget from '../components/chatai/ChatAiWidget';
 import ChatAiUsoBar from '../components/chatai/ChatAiUsoBar';
-import { enviarMensagem, obterUso, type StreamCallbacks } from '../api/chatAi';
+import { avaliarMensagem, enviarMensagem, obterUso, type StreamCallbacks } from '../api/chatAi';
 
 vi.mock('../api/chatAi', () => ({
   obterUso: vi.fn(),
   listarConversas: vi.fn().mockResolvedValue([]),
   obterConversa: vi.fn(),
   enviarMensagem: vi.fn(),
+  avaliarMensagem: vi.fn().mockResolvedValue(undefined),
 }));
 
 const uso = {
@@ -23,6 +24,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.mocked(obterUso).mockResolvedValue(uso);
   vi.mocked(enviarMensagem).mockReset();
+  vi.mocked(avaliarMensagem).mockClear();
 });
 
 async function abrir() {
@@ -42,7 +44,7 @@ describe('ChatAiWidget', () => {
       async (_id: string | null, _msg: string, cb: StreamCallbacks) => {
         cb.onDelta('Faturamento: ');
         cb.onDelta('R$ 1.000');
-        cb.onDone({ conversaId: 'c1', tokensPrompt: 10, tokensCompletion: 5, percentualCota: 12 });
+        cb.onDone({ conversaId: 'c1', mensagemId: 42, tokensPrompt: 10, tokensCompletion: 5, percentualCota: 12 });
       },
     );
     await abrir();
@@ -53,6 +55,24 @@ describe('ChatAiWidget', () => {
 
     await waitFor(() => expect(screen.getByText(/Faturamento: R\$ 1\.000/)).toBeInTheDocument());
     expect(screen.getByText('Qual o faturamento?')).toBeInTheDocument();
+  });
+
+  it('permite avaliar a resposta com 👍 (envia feedback com o id da mensagem)', async () => {
+    vi.mocked(enviarMensagem).mockImplementation(
+      async (_id: string | null, _msg: string, cb: StreamCallbacks) => {
+        cb.onDelta('Resposta');
+        cb.onDone({ conversaId: 'c1', mensagemId: 42, tokensPrompt: 1, tokensCompletion: 1, percentualCota: 5 });
+      },
+    );
+    await abrir();
+    fireEvent.change(screen.getByLabelText(/Mensagem para o assistente/i), {
+      target: { value: 'Oi' },
+    });
+    fireEvent.click(screen.getByLabelText(/Enviar mensagem/i));
+
+    const gostei = await screen.findByLabelText('Gostei da resposta');
+    fireEvent.click(gostei);
+    await waitFor(() => expect(vi.mocked(avaliarMensagem)).toHaveBeenCalledWith(42, 1));
   });
 
   it('exibe aviso amigável com CTA quando a cota é excedida', async () => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { History, Plus, Sparkles, X } from 'lucide-react';
 import {
+  avaliarMensagem,
   enviarMensagem,
   listarConversas,
   obterConversa,
@@ -12,7 +13,7 @@ import ChatAiMensagem from './ChatAiMensagem';
 import ChatAiInput from './ChatAiInput';
 import ChatAiUsoBar from './ChatAiUsoBar';
 
-type Msg = { papel: 'user' | 'assistant'; conteudo: string };
+type Msg = { papel: 'user' | 'assistant'; conteudo: string; id?: number; feedback?: number | null };
 type Erro = { mensagem: string; codigo?: string };
 
 export default function ChatAiWidget() {
@@ -73,7 +74,7 @@ export default function ChatAiWidget() {
           setStreaming(streamingRef.current);
         },
         onDone: (payload) => {
-          finalizarStreaming();
+          finalizarStreaming(payload.mensagemId);
           setConversaId(payload.conversaId);
           if (payload.percentualCota != null) {
             setUso((u) => (u ? { ...u, percentual: payload.percentualCota } : u));
@@ -90,10 +91,10 @@ export default function ChatAiWidget() {
     );
   };
 
-  const finalizarStreaming = () => {
+  const finalizarStreaming = (mensagemId?: number) => {
     const txt = streamingRef.current;
     if (txt) {
-      setMensagens((prev) => [...prev, { papel: 'assistant', conteudo: txt }]);
+      setMensagens((prev) => [...prev, { papel: 'assistant', conteudo: txt, id: mensagemId, feedback: null }]);
     }
     streamingRef.current = '';
     setStreaming('');
@@ -128,13 +129,32 @@ export default function ChatAiWidget() {
   const carregarConversa = async (id: string) => {
     try {
       const c = await obterConversa(id);
-      setMensagens(c.mensagens.map((m) => ({ papel: m.papel, conteudo: m.conteudo })));
+      setMensagens(
+        c.mensagens.map((m) => ({ papel: m.papel, conteudo: m.conteudo, id: m.id, feedback: m.feedback })),
+      );
       setConversaId(c.id);
       setErro(null);
       setMostrarHistorico(false);
     } catch {
       setErro({ mensagem: 'Não foi possível carregar a conversa.' });
     }
+  };
+
+  // Registra 👍/👎 (ou limpa com valor 0). Atualiza otimista e reverte em caso de erro.
+  const avaliar = (mensagemId: number, valor: number) => {
+    let anterior: number | null | undefined;
+    setMensagens((prev) =>
+      prev.map((m) => {
+        if (m.id !== mensagemId) return m;
+        anterior = m.feedback ?? null;
+        return { ...m, feedback: valor === 0 ? null : valor };
+      }),
+    );
+    avaliarMensagem(mensagemId, valor).catch(() => {
+      setMensagens((prev) =>
+        prev.map((m) => (m.id === mensagemId ? { ...m, feedback: anterior ?? null } : m)),
+      );
+    });
   };
 
   if (!aberto) {
@@ -206,7 +226,14 @@ export default function ChatAiWidget() {
               </div>
             )}
             {mensagens.map((m, i) => (
-              <ChatAiMensagem key={i} papel={m.papel} conteudo={m.conteudo} />
+              <ChatAiMensagem
+                key={m.id ?? i}
+                papel={m.papel}
+                conteudo={m.conteudo}
+                mensagemId={m.papel === 'assistant' ? m.id : undefined}
+                feedback={m.feedback}
+                onAvaliar={avaliar}
+              />
             ))}
             {streaming && <ChatAiMensagem papel="assistant" conteudo={streaming} />}
             {enviando && !streaming && (
