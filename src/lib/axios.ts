@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
       const user = JSON.parse(auth) as { role: string };
       if (user.role === 'SUPER_ADMIN' || user.role === 'SISTEMA_ADMIN') {
         const selectedId = localStorage.getItem('selectedInstituicaoId');
-        if (selectedId && config.url && (config.url.includes('/api/dashboard') || config.url.includes('/api/importacao'))) {
+        if (selectedId && config.url && (config.url.includes('/api/dashboard') || config.url.includes('/api/importacao') || config.url.includes('/api/chat-ai'))) {
           config.params = { ...config.params, instituicaoId: selectedId };
         }
       }
