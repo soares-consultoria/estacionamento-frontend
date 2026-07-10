@@ -6,6 +6,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { InstituicaoProvider } from './contexts/InstituicaoContext';
 import { useAuth } from './hooks/useAuth';
 import { useInstituicao } from './hooks/useInstituicao';
+import { usePlano } from './hooks/usePlano';
+import ChatAiWidget from './components/chatai/ChatAiWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/Login';
@@ -53,6 +55,7 @@ function AppLayout() {
   const { user, logout } = useAuth();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
   const { selectedId } = useInstituicao();
+  const { temAcesso } = usePlano();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
@@ -116,6 +119,8 @@ function AppLayout() {
           </Routes>
         </main>
       </div>
+
+      {temAcesso('chat-ai') && <ChatAiWidget />}
     </div>
   );
 }
