@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, Edit2, Plus, Users, XCircle } from 'lucide-react';
+import { CheckCircle, Edit2, Plus, Trash2, Users, XCircle } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { adminApi, type Instituicao, type UsuarioAdmin } from '../../api/client';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,12 +10,19 @@ function apiError(err: unknown, fallback: string): string {
   return e?.response?.data?.mensagem ?? e?.response?.data?.message ?? fallback;
 }
 
-const ROLES: Role[] = ['SUPER_ADMIN', 'ADMIN', 'USER'];
 const ROLE_LABELS: Record<Role, string> = {
+  SISTEMA_ADMIN: 'Sistema Admin',
   SUPER_ADMIN: 'Super Admin',
   ADMIN: 'Administrador',
   USER: 'Usuário',
 };
+
+/** Perfis que o usuário logado pode conceder — espelha a hierarquia do backend. */
+function rolesConcedeveis(role?: string): Role[] {
+  if (role === 'SISTEMA_ADMIN') return ['SISTEMA_ADMIN', 'SUPER_ADMIN', 'ADMIN', 'USER'];
+  if (role === 'SUPER_ADMIN') return ['SUPER_ADMIN', 'ADMIN', 'USER'];
+  return ['ADMIN', 'USER'];
+}
 
 interface CreateForm {
   instituicaoId: number | null;
@@ -35,7 +42,8 @@ const emptyCreate: CreateForm = { instituicaoId: null, nome: '', email: '', senh
 
 export default function UsuariosPage() {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  // "admin global": enxerga/seleciona instituição de qualquer conta (SUPER_ADMIN ou SISTEMA_ADMIN).
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
 
   const [usuarios, setUsuarios] = useState<UsuarioAdmin[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -119,7 +127,20 @@ export default function UsuariosPage() {
     }
   }
 
-  const availableRoles: Role[] = isSuperAdmin ? ROLES : ['ADMIN', 'USER'];
+  const availableRoles: Role[] = rolesConcedeveis(user?.role);
+
+  async function handleDelete(u: UsuarioAdmin) {
+    if (!window.confirm(`Excluir o usuário "${u.nome}" (${u.email})? Esta ação é permanente.`)) return;
+    setError(null);
+    try {
+      await adminApi.deleteUsuario(u.id);
+      const nextPage = usuarios.length === 1 && page > 0 ? page - 1 : page;
+      if (nextPage !== page) setPage(nextPage);
+      else await load(page);
+    } catch (err) {
+      setError(apiError(err, 'Erro ao excluir usuário.'));
+    }
+  }
 
   return (
     <div className="p-4 sm:p-6 h-full overflow-y-auto">
@@ -325,7 +346,9 @@ export default function UsuariosPage() {
                           )}
                           <td className="px-5 py-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              u.role === 'SUPER_ADMIN'
+                              u.role === 'SISTEMA_ADMIN'
+                                ? 'bg-rose-100 text-rose-700'
+                                : u.role === 'SUPER_ADMIN'
                                 ? 'bg-purple-100 text-purple-700'
                                 : u.role === 'ADMIN'
                                 ? 'bg-blue-100 text-blue-700'
@@ -341,13 +364,24 @@ export default function UsuariosPage() {
                             }
                           </td>
                           <td className="px-5 py-3 text-right">
-                            <button
-                              onClick={() => openEdit(u)}
-                              className="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded"
-                              title="Editar"
-                            >
-                              <Edit2 size={15} />
-                            </button>
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => openEdit(u)}
+                                className="text-slate-400 hover:text-blue-500 transition-colors p-1 rounded"
+                                title="Editar"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              {u.email !== user?.email && (
+                                <button
+                                  onClick={() => handleDelete(u)}
+                                  className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded"
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
