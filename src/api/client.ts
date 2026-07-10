@@ -242,7 +242,39 @@ export interface UsuarioAdmin {
   ultimo_login: string | null;
 }
 
+// ─── Consumo de IA (SISTEMA_ADMIN) — snake_case (backend SNAKE_CASE) ───
+export interface AiConsumoInstituicao {
+  instituicao_id: number;
+  instituicao_nome: string;
+  conta_id: number;
+  conta_nome: string;
+  requisicoes: number;
+  tokens_prompt: number;
+  tokens_completion: number;
+  tokens_total: number;
+  custo_brl: number;
+  preco_brl: number;
+  margem_brl: number;
+}
+
+export interface AiConsumoResumo {
+  periodo: string;
+  usd_to_brl: number;
+  markup: number;
+  instituicoes: AiConsumoInstituicao[];
+  totais: {
+    requisicoes: number;
+    tokens_total: number;
+    custo_brl: number;
+    preco_brl: number;
+    margem_brl: number;
+  };
+}
+
 export const adminApi = {
+  getConsumoIA: (periodo: string) =>
+    api.get<AiConsumoResumo>('/api/admin/ai-consumo', { params: { periodo } }).then(r => r.data),
+
   listInstituicoes: () =>
     api.get<Instituicao[]>('/api/admin/instituicoes').then(r => r.data),
 
