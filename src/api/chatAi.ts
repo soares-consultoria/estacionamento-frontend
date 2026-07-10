@@ -94,10 +94,13 @@ export async function enviarMensagem(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
+        // application/json também: respostas de erro (403/429) do backend são JSON —
+        // sem isso, o endpoint (produces=text/event-stream) devolve 406.
+        Accept: 'text/event-stream, application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ conversaId, mensagem }),
+      // snake_case: o backend usa property-naming SNAKE_CASE (conversa_id).
+      body: JSON.stringify({ conversa_id: conversaId, mensagem }),
       signal,
     });
   } catch (e) {
