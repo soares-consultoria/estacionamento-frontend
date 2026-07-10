@@ -1,0 +1,154 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Coins } from 'lucide-react';
+import { adminApi, type AiConsumoResumo } from '../../api/client';
+
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+const BRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const INT = (v: number) => v.toLocaleString('pt-BR');
+
+export default function ConsumoIAPage() {
+  const agora = new Date();
+  const [ano, setAno] = useState(agora.getFullYear());
+  const [mes, setMes] = useState(agora.getMonth() + 1);
+  const [resumo, setResumo] = useState<AiConsumoResumo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const periodo = useMemo(() => `${ano}-${String(mes).padStart(2, '0')}`, [ano, mes]);
+  const anos = useMemo(() => {
+    const y = agora.getFullYear();
+    return [y, y - 1, y - 2];
+  }, [agora]);
+
+  useEffect(() => {
+    let vivo = true;
+    setLoading(true);
+    setError(null);
+    adminApi
+      .getConsumoIA(periodo)
+      .then((r) => vivo && setResumo(r))
+      .catch(() => vivo && setError('Não foi possível carregar o consumo.'))
+      .finally(() => vivo && setLoading(false));
+    return () => {
+      vivo = false;
+    };
+  }, [periodo]);
+
+  return (
+    <div className="p-4 sm:p-6 h-full overflow-y-auto">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Coins size={22} className="text-blue-500" />
+            <h1 className="text-xl font-bold text-slate-800">Consumo de IA</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={mes}
+              onChange={(e) => setMes(Number(e.target.value))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {MESES.map((m, i) => (
+                <option key={i} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={ano}
+              onChange={(e) => setAno(Number(e.target.value))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {anos.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <p className="text-sm text-slate-500 mb-6">
+          Tokens consumidos por instituição, com custo (OpenAI), preço ao cliente e margem.
+        </p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">{error}</div>
+        )}
+
+        {loading ? (
+          <p className="text-slate-400 text-sm text-center py-8">Carregando...</p>
+        ) : resumo ? (
+          <>
+            {/* Cabeçalho de precificação */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <Kpi titulo="Preço do mês" valor={BRL(resumo.totais.preco_brl)} destaque />
+              <Kpi titulo="Custo (OpenAI)" valor={BRL(resumo.totais.custo_brl)} />
+              <Kpi titulo="Margem" valor={BRL(resumo.totais.margem_brl)} cor="text-emerald-600" />
+              <Kpi titulo="Tokens / Requisições" valor={INT(resumo.totais.tokens_total)} sub={`${INT(resumo.totais.requisicoes)} requisições`} />
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                      <th className="text-left px-4 py-3">Conta</th>
+                      <th className="text-left px-4 py-3">Instituição</th>
+                      <th className="text-right px-4 py-3">Requisições</th>
+                      <th className="text-right px-4 py-3">Tokens</th>
+                      <th className="text-right px-4 py-3">Custo</th>
+                      <th className="text-right px-4 py-3">Preço</th>
+                      <th className="text-right px-4 py-3">Margem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {resumo.instituicoes.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td>
+                      </tr>
+                    ) : (
+                      resumo.instituicoes.map((i) => (
+                        <tr key={i.instituicao_id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-slate-500">{i.conta_nome}</td>
+                          <td className="px-4 py-3 font-medium text-slate-800">{i.instituicao_nome}</td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(i.requisicoes)}</td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(i.tokens_total)}</td>
+                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(i.custo_brl)}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(i.preco_brl)}</td>
+                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(i.margem_brl)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  {resumo.instituicoes.length > 0 && (
+                    <tfoot>
+                      <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                        <td className="px-4 py-3" colSpan={2}>Total</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.requisicoes)}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.tokens_total)}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{BRL(resumo.totais.custo_brl)}</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{BRL(resumo.totais.preco_brl)}</td>
+                        <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(resumo.totais.margem_brl)}</td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 mt-3">
+              Precificação: preço = custo × {resumo.markup} (markup) · câmbio USD→BRL {BRL(resumo.usd_to_brl)}. Custo estimado pelas tarifas públicas da OpenAI por modelo.
+            </p>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function Kpi({ titulo, valor, sub, cor, destaque }: { titulo: string; valor: string; sub?: string; cor?: string; destaque?: boolean }) {
+  return (
+    <div className={`rounded-xl border p-4 ${destaque ? 'bg-blue-50 border-blue-100' : 'bg-white border-slate-200'} shadow-sm`}>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{titulo}</p>
+      <p className={`text-xl font-bold mt-1 tabular-nums ${cor ?? 'text-slate-800'}`}>{valor}</p>
+      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
