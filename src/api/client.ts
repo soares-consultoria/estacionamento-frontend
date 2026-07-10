@@ -12,6 +12,8 @@ export interface KpiMensal {
   fluxo_variacao_pct: number | null;
   receita_total: number;
   receita_variacao_pct: number | null;
+  faturamento_total: number;
+  faturamento_variacao_pct: number | null;
   pagantes_total: number;
   /** @deprecated usar ticket_medio_rotativo */
   ticket_medio: number;

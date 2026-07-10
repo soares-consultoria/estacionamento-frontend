@@ -17,7 +17,7 @@ import {
 import { dashboardApi, type FluxoDiario, type KpiMensal, type ReceitaDiaria } from '../api/client';
 import KpiCard from '../components/KpiCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { BarChart2, Car, DollarSign, Users } from 'lucide-react';
+import { BarChart2, Car, DollarSign, Users, Wallet } from 'lucide-react';
 
 const BRL = (v: number | null | undefined) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
@@ -135,7 +135,7 @@ export default function Overview() {
         {loadingKpi ? (
           <LoadingSpinner label="Carregando KPIs..." />
         ) : kpi ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
             <KpiCard
               title="Fluxo Total"
               value={INT(kpi.fluxo_total)}
@@ -143,6 +143,14 @@ export default function Overview() {
               subtitle="veículos no mês"
               icon={<Car size={18} />}
               colorClass="text-blue-600"
+            />
+            <KpiCard
+              title="Faturamento"
+              value={BRL(kpi.faturamento_total)}
+              variacao={kpi.faturamento_variacao_pct}
+              subtitle="total do mês"
+              icon={<Wallet size={18} />}
+              colorClass="text-teal-600"
             />
             <KpiCard
               title="Arrecadação"
