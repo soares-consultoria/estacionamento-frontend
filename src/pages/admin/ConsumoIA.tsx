@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Coins } from 'lucide-react';
-import { adminApi, type AiConsumoResumo } from '../../api/client';
+import { adminApi, type AiConsumoResumo, type AiConsumoUsuarioResumo } from '../../api/client';
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 const BRL = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const INT = (v: number) => v.toLocaleString('pt-BR');
+
+type Visao = 'instituicao' | 'usuario';
 
 function OrigemBadge({ origem }: { origem: 'chat' | 'pdf' }) {
   const chat = origem === 'chat';
@@ -20,7 +22,9 @@ export default function ConsumoIAPage() {
   const agora = new Date();
   const [ano, setAno] = useState(agora.getFullYear());
   const [mes, setMes] = useState(agora.getMonth() + 1);
-  const [resumo, setResumo] = useState<AiConsumoResumo | null>(null);
+  const [visao, setVisao] = useState<Visao>('instituicao');
+  const [porInst, setPorInst] = useState<AiConsumoResumo | null>(null);
+  const [porUser, setPorUser] = useState<AiConsumoUsuarioResumo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,15 +38,14 @@ export default function ConsumoIAPage() {
     let vivo = true;
     setLoading(true);
     setError(null);
-    adminApi
-      .getConsumoIA(periodo)
-      .then((r) => vivo && setResumo(r))
-      .catch(() => vivo && setError('Não foi possível carregar o consumo.'))
-      .finally(() => vivo && setLoading(false));
-    return () => {
-      vivo = false;
-    };
-  }, [periodo]);
+    const req = visao === 'instituicao'
+      ? adminApi.getConsumoIA(periodo).then((r) => vivo && (setPorInst(r), setPorUser(null)))
+      : adminApi.getConsumoIAPorUsuario(periodo).then((r) => vivo && (setPorUser(r), setPorInst(null)));
+    req.catch(() => vivo && setError('Não foi possível carregar o consumo.')).finally(() => vivo && setLoading(false));
+    return () => { vivo = false; };
+  }, [periodo, visao]);
+
+  const resumo = visao === 'instituicao' ? porInst : porUser;
 
   return (
     <div className="p-4 sm:p-6 h-full overflow-y-auto">
@@ -53,28 +56,37 @@ export default function ConsumoIAPage() {
             <h1 className="text-xl font-bold text-slate-800">Consumo de IA</h1>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
+              {(['instituicao', 'usuario'] as Visao[]).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setVisao(v)}
+                  className={`px-3 py-2 font-medium transition-colors ${visao === v ? 'bg-blue-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                >
+                  {v === 'instituicao' ? 'Por instituição' : 'Por usuário'}
+                </button>
+              ))}
+            </div>
             <select
               value={mes}
               onChange={(e) => setMes(Number(e.target.value))}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {MESES.map((m, i) => (
-                <option key={i} value={i + 1}>{m}</option>
-              ))}
+              {MESES.map((m, i) => (<option key={i} value={i + 1}>{m}</option>))}
             </select>
             <select
               value={ano}
               onChange={(e) => setAno(Number(e.target.value))}
               className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {anos.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              {anos.map((y) => (<option key={y} value={y}>{y}</option>))}
             </select>
           </div>
         </div>
         <p className="text-sm text-slate-500 mb-6">
-          Tokens consumidos por instituição e origem (Assistente e extração de PDF), com custo (OpenAI), preço ao cliente e margem.
+          {visao === 'instituicao'
+            ? 'Tokens consumidos por instituição e origem (Assistente e extração de PDF), com custo, preço e margem.'
+            : 'Consumo de IA por usuário (auditoria), com custo, preço e margem.'}
         </p>
 
         {error && (
@@ -94,52 +106,98 @@ export default function ConsumoIAPage() {
 
             <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      <th className="text-left px-4 py-3">Conta</th>
-                      <th className="text-left px-4 py-3">Instituição</th>
-                      <th className="text-left px-4 py-3">Origem</th>
-                      <th className="text-right px-4 py-3">Requisições</th>
-                      <th className="text-right px-4 py-3">Tokens</th>
-                      <th className="text-right px-4 py-3">Custo</th>
-                      <th className="text-right px-4 py-3">Preço</th>
-                      <th className="text-right px-4 py-3">Margem</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {resumo.linhas.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td>
+                {visao === 'instituicao' && porInst ? (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        <th className="text-left px-4 py-3">Conta</th>
+                        <th className="text-left px-4 py-3">Instituição</th>
+                        <th className="text-left px-4 py-3">Origem</th>
+                        <th className="text-right px-4 py-3">Requisições</th>
+                        <th className="text-right px-4 py-3">Tokens</th>
+                        <th className="text-right px-4 py-3">Custo</th>
+                        <th className="text-right px-4 py-3">Preço</th>
+                        <th className="text-right px-4 py-3">Margem</th>
                       </tr>
-                    ) : (
-                      resumo.linhas.map((l) => (
-                        <tr key={`${l.instituicao_id}-${l.origem}`} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-slate-500">{l.conta_nome}</td>
-                          <td className="px-4 py-3 font-medium text-slate-800">{l.instituicao_nome}</td>
-                          <td className="px-4 py-3"><OrigemBadge origem={l.origem} /></td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.requisicoes)}</td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.tokens_total)}</td>
-                          <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(l.custo_brl)}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(l.preco_brl)}</td>
-                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(l.margem_brl)}</td>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {porInst.linhas.length === 0 ? (
+                        <tr><td colSpan={8} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td></tr>
+                      ) : (
+                        porInst.linhas.map((l) => (
+                          <tr key={`${l.instituicao_id}-${l.origem}`} className="hover:bg-slate-50">
+                            <td className="px-4 py-3 text-slate-500">{l.conta_nome}</td>
+                            <td className="px-4 py-3 font-medium text-slate-800">{l.instituicao_nome}</td>
+                            <td className="px-4 py-3"><OrigemBadge origem={l.origem} /></td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.requisicoes)}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(l.tokens_total)}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(l.custo_brl)}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(l.preco_brl)}</td>
+                            <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(l.margem_brl)}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                    {porInst.linhas.length > 0 && (
+                      <tfoot>
+                        <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                          <td className="px-4 py-3" colSpan={3}>Total</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{INT(porInst.totais.requisicoes)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{INT(porInst.totais.tokens_total)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{BRL(porInst.totais.custo_brl)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{BRL(porInst.totais.preco_brl)}</td>
+                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(porInst.totais.margem_brl)}</td>
                         </tr>
-                      ))
+                      </tfoot>
                     )}
-                  </tbody>
-                  {resumo.linhas.length > 0 && (
-                    <tfoot>
-                      <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-800">
-                        <td className="px-4 py-3" colSpan={3}>Total</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.requisicoes)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{INT(resumo.totais.tokens_total)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{BRL(resumo.totais.custo_brl)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{BRL(resumo.totais.preco_brl)}</td>
-                        <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(resumo.totais.margem_brl)}</td>
+                  </table>
+                ) : porUser ? (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        <th className="text-left px-4 py-3">Usuário</th>
+                        <th className="text-left px-4 py-3">Instituição</th>
+                        <th className="text-right px-4 py-3">Requisições</th>
+                        <th className="text-right px-4 py-3">Tokens</th>
+                        <th className="text-right px-4 py-3">Custo</th>
+                        <th className="text-right px-4 py-3">Preço</th>
+                        <th className="text-right px-4 py-3">Margem</th>
                       </tr>
-                    </tfoot>
-                  )}
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {porUser.usuarios.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center text-slate-400 py-8">Nenhum consumo no período.</td></tr>
+                      ) : (
+                        porUser.usuarios.map((u, idx) => (
+                          <tr key={`${u.usuario_id ?? 'sem'}-${idx}`} className="hover:bg-slate-50">
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-slate-800">{u.usuario_nome}</div>
+                              {u.usuario_email && <div className="text-xs text-slate-400">{u.usuario_email}</div>}
+                            </td>
+                            <td className="px-4 py-3 text-slate-500">{u.instituicao_nome}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(u.requisicoes)}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{INT(u.tokens_total)}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{BRL(u.custo_brl)}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-slate-800 tabular-nums">{BRL(u.preco_brl)}</td>
+                            <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(u.margem_brl)}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                    {porUser.usuarios.length > 0 && (
+                      <tfoot>
+                        <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-800">
+                          <td className="px-4 py-3" colSpan={2}>Total</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{INT(porUser.totais.requisicoes)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{INT(porUser.totais.tokens_total)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{BRL(porUser.totais.custo_brl)}</td>
+                          <td className="px-4 py-3 text-right tabular-nums">{BRL(porUser.totais.preco_brl)}</td>
+                          <td className="px-4 py-3 text-right text-emerald-600 tabular-nums">{BRL(porUser.totais.margem_brl)}</td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                ) : null}
               </div>
             </div>
 

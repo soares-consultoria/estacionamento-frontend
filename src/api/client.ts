@@ -273,9 +273,40 @@ export interface AiConsumoResumo {
   };
 }
 
+export interface AiConsumoUsuario {
+  usuario_id: number | null;
+  usuario_nome: string;
+  usuario_email: string | null;
+  instituicao_nome: string;
+  conta_nome: string;
+  requisicoes: number;
+  tokens_total: number;
+  custo_brl: number;
+  preco_brl: number;
+  margem_brl: number;
+}
+
+export interface AiConsumoUsuarioResumo {
+  periodo: string;
+  usd_to_brl: number;
+  fonte_cambio: string;
+  markup: number;
+  usuarios: AiConsumoUsuario[];
+  totais: {
+    requisicoes: number;
+    tokens_total: number;
+    custo_brl: number;
+    preco_brl: number;
+    margem_brl: number;
+  };
+}
+
 export const adminApi = {
   getConsumoIA: (periodo: string) =>
     api.get<AiConsumoResumo>('/api/admin/ai-consumo', { params: { periodo } }).then(r => r.data),
+
+  getConsumoIAPorUsuario: (periodo: string) =>
+    api.get<AiConsumoUsuarioResumo>('/api/admin/ai-consumo/usuarios', { params: { periodo } }).then(r => r.data),
 
   listInstituicoes: () =>
     api.get<Instituicao[]>('/api/admin/instituicoes').then(r => r.data),
