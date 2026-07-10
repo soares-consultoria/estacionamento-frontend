@@ -260,6 +260,9 @@ export const adminApi = {
 
   updateUsuario: (id: number, data: { nome: string; role?: Role; ativo?: boolean }) =>
     api.put<UsuarioAdmin>(`/api/admin/usuarios/${id}`, data).then(r => r.data),
+
+  deleteUsuario: (id: number) =>
+    api.delete<void>(`/api/admin/usuarios/${id}`).then(r => r.data),
 };
 
 export interface OcorrenciaProcessamento {
