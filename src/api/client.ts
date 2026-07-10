@@ -243,11 +243,12 @@ export interface UsuarioAdmin {
 }
 
 // ─── Consumo de IA (SISTEMA_ADMIN) — snake_case (backend SNAKE_CASE) ───
-export interface AiConsumoInstituicao {
+export interface AiConsumoLinha {
   instituicao_id: number;
   instituicao_nome: string;
   conta_id: number;
   conta_nome: string;
+  origem: 'chat' | 'pdf';
   requisicoes: number;
   tokens_prompt: number;
   tokens_completion: number;
@@ -260,8 +261,9 @@ export interface AiConsumoInstituicao {
 export interface AiConsumoResumo {
   periodo: string;
   usd_to_brl: number;
+  fonte_cambio: string;
   markup: number;
-  instituicoes: AiConsumoInstituicao[];
+  linhas: AiConsumoLinha[];
   totais: {
     requisicoes: number;
     tokens_total: number;
