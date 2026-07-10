@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { InstituicaoProvider } from './contexts/InstituicaoContext';
 import { useAuth } from './hooks/useAuth';
 import { useInstituicao } from './hooks/useInstituicao';
+import { usePlano } from './hooks/usePlano';
 import ChatAiWidget from './components/chatai/ChatAiWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
@@ -55,6 +56,13 @@ function AppLayout() {
   const { user, logout } = useAuth();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'SISTEMA_ADMIN';
   const { selectedId } = useInstituicao();
+  const { temAcesso } = usePlano();
+
+  // Fase 2: chat AI para perfis administrativos (USER fica de fora).
+  // SISTEMA_ADMIN ignora o plano (como o backend); ADMIN/SUPER_ADMIN exigem o plano com chat-ai.
+  const podeUsarChat =
+    user?.role === 'SISTEMA_ADMIN' ||
+    ((user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') && temAcesso('chat-ai'));
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
@@ -120,8 +128,8 @@ function AppLayout() {
         </main>
       </div>
 
-      {/* Fase 1: chat AI visível só para SISTEMA_ADMIN. Depois: usePlano().temAcesso('chat-ai'). */}
-      {user?.role === 'SISTEMA_ADMIN' && <ChatAiWidget />}
+      {/* Fase 2: chat AI para perfis administrativos (ADMIN, SUPER_ADMIN, SISTEMA_ADMIN). */}
+      {podeUsarChat && <ChatAiWidget />}
     </div>
   );
 }
