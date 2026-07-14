@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronRight,
-  FileText, Loader2, RefreshCw, SearchX,
+  FileText, Loader2, RefreshCw, SearchX, Trash2,
 } from 'lucide-react';
 import { importacaoApi, type ArquivoUploadItem, type DiaUpload, type HistoricoUpload } from '../api/client';
 import { InstituicaoContext } from '../contexts/InstituicaoContext';
@@ -104,6 +104,9 @@ export default function HistoricoUploadPage() {
   // Dia bloqueado para correção simples (tem outro arquivo legítimo) → oferece apagar o dia.
   const [bloqueioDia, setBloqueioDia] = useState<{ data: string; nome: string } | null>(null);
   const [apagandoDia, setApagandoDia] = useState(false);
+  // Exclusão direta de um dia inteiro (ação de manutenção — só SISTEMA_ADMIN).
+  const podeApagarDia = user?.role === 'SISTEMA_ADMIN';
+  const [apagandoData, setApagandoData] = useState<string | null>(null);
 
   async function corrigirData(arq: { id: number; nome_arquivo: string; data_referencia: string | null }) {
     const ok = window.confirm(
@@ -168,6 +171,33 @@ export default function HistoricoUploadPage() {
       setErro(data?.message ?? data?.mensagem ?? 'Não foi possível apagar o dia.');
     } finally {
       setApagandoDia(false);
+    }
+  }
+
+  async function apagarDiaDireto(data: string) {
+    const dataFmt = fmtDataNome(data);
+    const ok = window.confirm(
+      `APAGAR TODOS os arquivos de ${dataFmt} e seus dados?\n\n` +
+      `Remove todos os relatórios desse dia (REM e RFE) e os dados/fatos da data, ` +
+      `liberando os hashes. Esta ação é IRREVERSÍVEL.\n\n` +
+      `Depois, reenvie os arquivos na tela de Upload. Tenha-os em mãos antes de continuar.`,
+    );
+    if (!ok) return;
+    setApagandoData(data);
+    setErro(null);
+    try {
+      const r = await importacaoApi.apagarDia(data, needsInstituicao ? selectedId : undefined);
+      await buscar();
+      await carregarMalDatados();
+      window.alert(
+        `${r.removidos} arquivo(s) removido(s) de ${dataFmt}.\n\n` +
+        `Agora reenvie os arquivos na tela de Upload.`,
+      );
+    } catch (e: unknown) {
+      const d = (e as { response?: { data?: { message?: string; mensagem?: string } } })?.response?.data;
+      setErro(d?.message ?? d?.mensagem ?? 'Não foi possível apagar o dia.');
+    } finally {
+      setApagandoData(null);
     }
   }
 
@@ -306,6 +336,9 @@ export default function HistoricoUploadPage() {
                     onToggle={() => toggleDia(dia.data_referencia)}
                     onCorrigir={corrigirData}
                     corrigindoId={corrigindoId}
+                    podeApagar={podeApagarDia}
+                    onApagar={apagarDiaDireto}
+                    apagando={apagandoData === dia.data_referencia}
                   />
                 ))}
               </div>
@@ -388,10 +421,13 @@ function ResumoCard({ label, value, color }: {
   );
 }
 
-function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId }: {
+function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId, podeApagar, onApagar, apagando }: {
   dia: DiaUpload; expandido: boolean; onToggle: () => void;
   onCorrigir: (arq: { id: number; nome_arquivo: string; data_referencia: string | null }) => void;
   corrigindoId: number | null;
+  podeApagar: boolean;
+  onApagar: (data: string) => void;
+  apagando: boolean;
 }) {
   const isCompleto = dia.status_dia === 'COMPLETO';
 
@@ -484,6 +520,24 @@ function DiaCard({ dia, expandido, onToggle, onCorrigir, corrigindoId }: {
           {/* Faltando REM */}
           {!dia.arquivos.some(a => a.tipo_relatorio === 'EST_MOVIMENTACAO') && (
             <ArquivoFaltando tipo="Estatístico por Movimentação (REM)" />
+          )}
+
+          {/* Manutenção: apagar o dia inteiro (SISTEMA_ADMIN) */}
+          {podeApagar && dia.arquivos.length > 0 && (
+            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 border-t border-slate-100">
+              <span className="text-xs text-slate-500">
+                Apaga todos os relatórios e dados deste dia (irreversível). Depois, reenvie os arquivos.
+              </span>
+              <button
+                onClick={() => dia.data_referencia && onApagar(dia.data_referencia)}
+                disabled={apagando}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 border border-red-200 rounded-md px-3 py-1.5 transition-colors flex-shrink-0"
+                title="Apagar todos os arquivos e dados deste dia (irreversível)"
+              >
+                {apagando ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                Apagar este dia
+              </button>
+            </div>
           )}
         </div>
       )}
