@@ -581,4 +581,19 @@ export const importacaoApi = {
     api.get<ArquivoUploadItem[]>('/api/importacao/historico/mal-datados', {
       params: instituicaoId ? { instituicaoId } : undefined,
     }).then(r => r.data),
+
+  malDatadosGlobal: () =>
+    api.get<MalDatadoGlobal[]>('/api/importacao/historico/mal-datados-global').then(r => r.data),
 };
+
+// Relatório consolidado de mal-datados (SISTEMA_ADMIN) — snake_case (backend SNAKE_CASE).
+export interface MalDatadoGlobal {
+  instituicao_id: number;
+  instituicao_nome: string;
+  arquivo_id: number;
+  nome_arquivo: string;
+  tipo_relatorio: string | null;
+  data_nome_arquivo: string | null;
+  data_referencia: string | null;
+  status: string;
+}

@@ -1,4 +1,4 @@
-import { BarChart2, Building2, CalendarDays, Car, Clock, Coins, GitCompare, History, Home, Lock, LogOut, MessageSquare, Server, Shield, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
+import { BarChart2, Building2, CalendarDays, Car, Clock, Coins, FileWarning, GitCompare, History, Home, Lock, LogOut, MessageSquare, Server, Shield, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { usePlano } from '../hooks/usePlano';
@@ -246,6 +246,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   >
                     <Coins size={18} />
                     Consumo de IA
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/admin/importacoes-maldatadas"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <FileWarning size={18} />
+                    Importações mal-datadas
                   </NavLink>
                 </li>
               </ul>
