@@ -30,6 +30,7 @@ import ResetSenhaPage from './pages/ResetSenha';
 import PlanoGestaoPage from './pages/admin/PlanoGestao';
 import ContasPage from './pages/admin/Contas';
 import ConsumoIAPage from './pages/admin/ConsumoIA';
+import ImportacoesMalDatadasPage from './pages/admin/ImportacoesMalDatadas';
 import ChatFeedbackPage from './pages/admin/ChatFeedback';
 
 function InstituicaoSelector() {
@@ -125,6 +126,7 @@ function AppLayout() {
             <Route path="/admin/planos" element={<ProtectedRoute><PlanoGestaoPage /></ProtectedRoute>} />
             <Route path="/admin/contas" element={<ProtectedRoute><ContasPage /></ProtectedRoute>} />
             <Route path="/admin/consumo-ia" element={<ProtectedRoute><ConsumoIAPage /></ProtectedRoute>} />
+            <Route path="/admin/importacoes-maldatadas" element={<ProtectedRoute><ImportacoesMalDatadasPage /></ProtectedRoute>} />
             <Route path="/admin/chat-feedback" element={<ProtectedRoute><ChatFeedbackPage /></ProtectedRoute>} />
           </Routes>
         </main>
