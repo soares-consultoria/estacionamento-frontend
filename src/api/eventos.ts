@@ -13,6 +13,8 @@ export interface Evento {
   descricao: string | null;
   criado_em: string;
   atualizado_em: string;
+  fluxo_pico: number | null;  // maior fluxo diário no período (null sem dados)
+  impacto_pct: number | null; // variação vs. média dos dias sem evento (null sem dados/base)
 }
 
 export interface EventoInput {

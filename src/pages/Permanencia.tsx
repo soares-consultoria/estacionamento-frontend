@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
 import { permanenciaApi, type Permanencia, type PermanenciaTendencia } from '../api/permanencia';
@@ -28,6 +28,21 @@ function TendenciaTooltip({ active, payload }: TendTooltipProps) {
     <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-xs">
       <p className="font-semibold text-slate-700">{p.mes}</p>
       <p className="text-slate-600">Média: <b>{p.label ?? '—'}</b></p>
+    </div>
+  );
+}
+
+interface DistTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { faixa: string; total: number; pct: number } }>;
+}
+function DistribuicaoTooltip({ active, payload }: DistTooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-xs">
+      <p className="font-semibold text-slate-700">{p.faixa}</p>
+      <p className="text-slate-600"><b>{nfInt.format(p.total)}</b> veículos <span className="text-slate-400">({nf1.format(p.pct)}%)</span></p>
     </div>
   );
 }
@@ -127,24 +142,23 @@ export default function PermanenciaPage() {
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
                 <h2 className="text-base font-semibold text-slate-700">Distribuição por faixa de permanência</h2>
                 <p className="text-xs text-slate-400 mb-4">{ano} — quantidade de veículos por tempo de permanência.</p>
-                <div className="space-y-3">
-                  {faixas.map(f => (
-                    <div key={f.faixa}>
-                      <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-slate-600">{f.faixa}</span>
-                        <span className="text-slate-800 font-semibold tabular-nums">
-                          {nfInt.format(f.total)} <span className="text-slate-400 font-normal">({nf1.format(f.pct)}%)</span>
-                        </span>
-                      </div>
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-2 rounded-full bg-blue-500"
-                          style={{ width: `${maxTotal > 0 ? Math.round((f.total / maxTotal) * 100) : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={faixas} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="faixa" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} interval={0} />
+                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                      tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))} />
+                    <Tooltip content={<DistribuicaoTooltip />} cursor={{ fill: '#f8fafc' }} />
+                    <Bar dataKey="total" radius={[6, 6, 0, 0]} maxBarSize={72}>
+                      {faixas.map(f => (
+                        <Cell key={f.faixa} fill={f.total === maxTotal ? '#3b82f6' : '#93c5fd'} />
+                      ))}
+                      <LabelList dataKey="total" position="top" offset={8}
+                        formatter={(v) => nfInt.format(Number(v) || 0)}
+                        style={{ fontSize: 11, fontWeight: 600, fill: '#334155' }} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Composição */}

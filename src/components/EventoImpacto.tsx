@@ -3,7 +3,7 @@ import {
   Area, CartesianGrid, ComposedChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
 import { useInstituicao } from '../hooks/useInstituicao';
-import { eventosApi, CATEGORIA_INFO, type EventoImpacto } from '../api/eventos';
+import { eventosApi, type EventoImpacto } from '../api/eventos';
 
 const nfInt = new Intl.NumberFormat('pt-BR');
 const nfBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -144,58 +144,6 @@ export default function EventoImpactoSection() {
             <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><i className="w-2.5 h-0.5 bg-violet-500 inline-block" /> Dia com evento</span>
             <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><i className="w-2.5 h-0.5 bg-slate-300 inline-block" /> Média (dias sem evento)</span>
           </div>
-
-          {/* Impacto por evento */}
-          {(dados!.eventos?.length ?? 0) > 0 && (
-            <div className="mt-5">
-              <h3 className="text-sm font-semibold text-slate-700 mb-2">Impacto por evento</h3>
-              <div className="overflow-x-auto rounded-lg border border-slate-100">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Evento</th>
-                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Período</th>
-                      <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pico</th>
-                      <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
-                          title="Variação do pico de fluxo do evento vs. a média dos dias sem evento.">
-                        Impacto <span className="normal-case font-normal text-slate-400">(vs. base)</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dados!.eventos.map(ev => {
-                      const info = CATEGORIA_INFO[ev.categoria];
-                      const periodo = ev.data_inicio === ev.data_fim
-                        ? fmtData(ev.data_inicio)
-                        : `${fmtData(ev.data_inicio)} – ${fmtData(ev.data_fim)}`;
-                      const pos = (ev.impacto_pct ?? 0) >= 0;
-                      return (
-                        <tr key={ev.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                          <td className="px-3 py-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${info.chip}`}>
-                                {info.emoji} {info.label}
-                              </span>
-                              <span className="text-sm text-slate-700 truncate">{ev.titulo}</span>
-                            </div>
-                            <div className="text-[11px] text-slate-400 mt-0.5 sm:hidden">{periodo}</div>
-                          </td>
-                          <td className="px-3 py-2 text-sm text-slate-500 whitespace-nowrap hidden sm:table-cell">{periodo}</td>
-                          <td className="px-3 py-2 text-sm text-right text-slate-700 tabular-nums font-semibold">{nfInt.format(ev.fluxo_pico)}</td>
-                          <td className={`px-3 py-2 text-sm text-right tabular-nums font-bold ${ev.impacto_pct == null ? 'text-slate-400' : pos ? 'text-emerald-700' : 'text-red-600'}`}>
-                            {ev.impacto_pct == null ? '—' : `${pos ? '+' : ''}${String(ev.impacto_pct).replace('.', ',')}%`}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-2">
-                <b>Pico</b> = maior fluxo diário no período do evento. <b>Impacto</b> = variação desse pico vs. a média dos dias sem evento no mês.
-              </p>
-            </div>
-          )}
 
           {eventoDias.length === 0 && (
             <p className="text-xs text-slate-400 mt-3">
