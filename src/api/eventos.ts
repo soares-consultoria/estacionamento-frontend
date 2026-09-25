@@ -23,6 +23,38 @@ export interface EventoInput {
   descricao?: string | null;
 }
 
+// Análise de impacto (snake_case).
+export interface EventoImpactoDia {
+  data: string;
+  dia: number;
+  fluxo: number;
+  receita: number;
+  tem_evento: boolean;
+  eventos: string[];
+}
+export interface EventoImpactoItem {
+  id: number;
+  titulo: string;
+  categoria: CategoriaEvento;
+  data_inicio: string;
+  data_fim: string;
+  fluxo_pico: number;
+  impacto_pct: number | null;
+}
+export interface EventoImpacto {
+  ano: number;
+  mes: number;
+  dias: EventoImpactoDia[];
+  media_fluxo_base: number;
+  media_receita_base: number;
+  maior_pico_fluxo: number;
+  maior_pico_data: string | null;
+  maior_pico_evento: string | null;
+  impacto_medio_pct: number | null;
+  receita_extra_estimada: number;
+  eventos: EventoImpactoItem[];
+}
+
 export const eventosApi = {
   listar: (inicio?: string, fim?: string) =>
     api.get<Evento[]>('/api/eventos', {
@@ -37,6 +69,9 @@ export const eventosApi = {
 
   excluir: (id: number) =>
     api.delete<void>(`/api/eventos/${id}`).then(r => r.data),
+
+  impacto: (ano: number, mes: number) =>
+    api.get<EventoImpacto>('/api/eventos/impacto', { params: { ano, mes } }).then(r => r.data),
 };
 
 export const CATEGORIAS: { valor: CategoriaEvento; label: string; emoji: string }[] = [

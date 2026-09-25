@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CalendarRange, Pencil, Plus, Trash2, X } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import EventoImpactoSection from '../components/EventoImpacto';
 import { useInstituicao } from '../hooks/useInstituicao';
 import {
   eventosApi,
@@ -176,6 +177,9 @@ export default function EventosPage() {
             <p className="text-2xl font-bold text-slate-800 mt-2 tabular-nums">{kpis.categorias}</p>
           </div>
         </div>
+
+        {/* Análise de impacto dos eventos no fluxo */}
+        <EventoImpactoSection />
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
