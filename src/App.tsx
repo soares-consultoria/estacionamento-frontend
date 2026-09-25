@@ -32,6 +32,7 @@ import ContasPage from './pages/admin/Contas';
 import ConsumoIAPage from './pages/admin/ConsumoIA';
 import ImportacoesMalDatadasPage from './pages/admin/ImportacoesMalDatadas';
 import ChatFeedbackPage from './pages/admin/ChatFeedback';
+import EventosPage from './pages/Eventos';
 
 function InstituicaoSelector() {
   const { instituicoes, selectedId, setSelectedId } = useInstituicao();
@@ -128,6 +129,7 @@ function AppLayout() {
             <Route path="/admin/consumo-ia" element={<ProtectedRoute><ConsumoIAPage /></ProtectedRoute>} />
             <Route path="/admin/importacoes-maldatadas" element={<ProtectedRoute><ImportacoesMalDatadasPage /></ProtectedRoute>} />
             <Route path="/admin/chat-feedback" element={<ProtectedRoute><ChatFeedbackPage /></ProtectedRoute>} />
+            <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

@@ -1,4 +1,4 @@
-import { BarChart2, Building2, CalendarDays, Car, Clock, Coins, FileWarning, GitCompare, History, Home, Lock, LogOut, MessageSquare, Server, Shield, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
+import { BarChart2, Building2, CalendarDays, CalendarRange, Car, Clock, Coins, FileWarning, GitCompare, History, Home, Lock, LogOut, MessageSquare, Server, Shield, Target, Trophy, TrendingUp, UploadCloud, Users, X, Zap } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { usePlano } from '../hooks/usePlano';
@@ -139,6 +139,34 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   >
                     <History size={18} />
                     Histórico de Uploads
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          {/* Inteligência — preview inicial só para SISTEMA_ADMIN */}
+          {isSistemaAdmin && (
+            <div>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                Inteligência
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <NavLink
+                    to="/eventos"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <CalendarRange size={18} />
+                    <span className="flex-1">Eventos</span>
+                    <span className="text-[9px] font-bold tracking-wide bg-emerald-500 text-emerald-950 px-1.5 py-0.5 rounded-full">NOVO</span>
                   </NavLink>
                 </li>
               </ul>
