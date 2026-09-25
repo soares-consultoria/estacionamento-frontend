@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
 import { permanenciaApi, type Permanencia } from '../api/permanencia';
 
 const nfInt = new Intl.NumberFormat('pt-BR');
+const nf1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 const ANOS = (() => {
   const atual = new Date().getFullYear();
@@ -22,19 +23,23 @@ export default function PermanenciaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setDados(await permanenciaApi.get(ano));
-    } catch {
-      setError('Erro ao carregar a permanência.');
-    } finally {
-      setLoading(false);
-    }
-  }, [ano]);
-
-  useEffect(() => { load(); }, [load, selectedId]);
+  // Refaz ao trocar ano/instituição; ignora respostas obsoletas (evita race entre requests).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const d = await permanenciaApi.get(ano);
+        if (!cancelled) setDados(d);
+      } catch {
+        if (!cancelled) setError('Erro ao carregar a permanência.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [ano, selectedId]);
 
   const faixas = dados?.faixas ?? [];
   const maxTotal = faixas.reduce((mx, f) => Math.max(mx, f.total), 0);
@@ -64,7 +69,7 @@ export default function PermanenciaPage() {
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        {loading ? (
+        {error ? null : loading ? (
           <LoadingSpinner label="Carregando permanência..." />
         ) : !temDados ? (
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-10 text-center">
@@ -111,7 +116,7 @@ export default function PermanenciaPage() {
                       <div className="flex items-center justify-between text-sm mb-1">
                         <span className="text-slate-600">{f.faixa}</span>
                         <span className="text-slate-800 font-semibold tabular-nums">
-                          {nfInt.format(f.total)} <span className="text-slate-400 font-normal">({f.pct}%)</span>
+                          {nfInt.format(f.total)} <span className="text-slate-400 font-normal">({nf1.format(f.pct)}%)</span>
                         </span>
                       </div>
                       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
