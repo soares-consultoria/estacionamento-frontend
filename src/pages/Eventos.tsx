@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarRange, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { AlertTriangle, CalendarRange, Pencil, Plus, Trash2, X } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
 import {
@@ -54,6 +54,8 @@ export default function EventosPage() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Evento | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -126,13 +128,17 @@ export default function EventosPage() {
     }
   }
 
-  async function handleDelete(e: Evento) {
-    if (!window.confirm(`Excluir o evento "${e.titulo}"?`)) return;
+  async function confirmarExclusao() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await eventosApi.excluir(e.id);
+      await eventosApi.excluir(deleteTarget.id);
+      setDeleteTarget(null);
       await load();
     } catch {
       setError('Erro ao excluir o evento.');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -227,7 +233,7 @@ export default function EventosPage() {
                           <Pencil size={14} />
                         </button>
                         <button
-                          onClick={() => handleDelete(e)}
+                          onClick={() => setDeleteTarget(e)}
                           className="border border-slate-200 rounded-lg p-1.5 ml-1.5 hover:bg-red-50 hover:border-red-200 text-red-600"
                           title="Excluir" aria-label="Excluir evento"
                         >
@@ -337,6 +343,42 @@ export default function EventosPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmação de exclusão (modal padrão, substitui o window.confirm) */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => { if (!deleting) setDeleteTarget(null); }}
+        >
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden" onClick={ev => ev.stopPropagation()}>
+            <div className="p-5 flex gap-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={20} className="text-red-600" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-slate-800">Excluir evento</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  Tem certeza que deseja excluir <b className="text-slate-700">"{deleteTarget.titulo}"</b>? Esta ação não pode ser desfeita.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-4 bg-slate-50 border-t border-slate-100">
+              <button
+                type="button" onClick={() => setDeleteTarget(null)} disabled={deleting}
+                className="bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button" onClick={confirmarExclusao} disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white rounded-lg px-4 py-2 text-sm font-semibold inline-flex items-center gap-2"
+              >
+                <Trash2 size={15} /> {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
           </div>
         </div>
       )}
