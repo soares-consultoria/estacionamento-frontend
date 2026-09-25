@@ -186,6 +186,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <span className="text-[9px] font-bold tracking-wide bg-emerald-500 text-emerald-950 px-1.5 py-0.5 rounded-full">NOVO</span>
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/permanencia"
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-purple-600 text-white'
+                          : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                      }`
+                    }
+                  >
+                    <Clock size={18} />
+                    <span className="flex-1">Permanência</span>
+                    <span className="text-[9px] font-bold tracking-wide bg-emerald-500 text-emerald-950 px-1.5 py-0.5 rounded-full">NOVO</span>
+                  </NavLink>
+                </li>
               </ul>
             </div>
           )}
