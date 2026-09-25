@@ -12,6 +12,8 @@ import {
   type EventoInput,
 } from '../api/eventos';
 
+const nfInt = new Intl.NumberFormat('pt-BR');
+
 function fmtData(iso: string): string {
   const [a, m, d] = iso.split('-');
   return `${d}/${m}/${a}`;
@@ -206,6 +208,11 @@ export default function EventosPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Período</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Evento</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoria</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Fluxo no pico</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                      title="Variação do fluxo médio do evento vs. a média dos dias sem evento no mês.">
+                    vs. média
+                  </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
@@ -227,6 +234,18 @@ export default function EventosPage() {
                         <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${info.chip}`}>
                           {info.emoji} {info.label}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right tabular-nums font-semibold text-slate-800">
+                        {e.fluxo_pico != null ? nfInt.format(e.fluxo_pico) : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-right tabular-nums font-bold">
+                        {e.impacto_pct == null ? (
+                          <span className="text-slate-300">—</span>
+                        ) : (
+                          <span className={e.impacto_pct >= 0 ? 'text-emerald-700' : 'text-red-600'}>
+                            {e.impacto_pct >= 0 ? '▲ ' : '▼ '}{`${e.impacto_pct >= 0 ? '+' : ''}${String(e.impacto_pct).replace('.', ',')}%`}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center whitespace-nowrap">
                         <button
