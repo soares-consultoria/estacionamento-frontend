@@ -210,8 +210,8 @@ export default function EventosPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoria</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Fluxo no pico</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider"
-                      title="Variação do fluxo médio do evento vs. a média dos dias sem evento no mês.">
-                    vs. média
+                      title="Quanto o movimento nos dias do evento ficou acima (ou abaixo) de um dia normal do mês.">
+                    Impacto
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Ações</th>
                 </tr>

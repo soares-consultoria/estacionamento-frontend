@@ -145,8 +145,8 @@ export default function RankingAnualPage() {
                     <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Fluxo</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Receita</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell w-48"
-                        title="Tamanho relativo ao maior dia do ranking (100% = líder).">
-                      Participação <span className="normal-case font-normal text-slate-400">(vs. líder)</span>
+                        title="Quanto este dia representa do melhor dia do ranking (o melhor dia = 100%).">
+                      % do melhor dia
                     </th>
                   </tr>
                 </thead>
@@ -194,8 +194,8 @@ export default function RankingAnualPage() {
 
             <p className="text-xs text-slate-400">
               Ranking dos {itens.length} maiores dias de <b>{metrica === 'FLUXO' ? 'fluxo' : 'receita'}</b> em {ano},
-              na instituição selecionada. Alterne o critério nas abas acima. A coluna <b>Participação</b> mostra o quanto
-              cada dia representa em relação ao <b>maior dia</b> do ranking (100% = líder).
+              na instituição selecionada. Alterne o critério nas abas acima. A coluna <b>% do melhor dia</b> mostra o quanto
+              cada dia representa em relação ao <b>melhor dia</b> do ranking (o melhor dia = 100%).
             </p>
           </>
         )}
