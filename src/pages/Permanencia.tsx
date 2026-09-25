@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
 import { permanenciaApi, type Permanencia, type PermanenciaTendencia } from '../api/permanencia';
@@ -150,28 +150,51 @@ export default function PermanenciaPage() {
               {/* Composição */}
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
                 <h2 className="text-base font-semibold text-slate-700">Composição</h2>
-                <p className="text-xs text-slate-400 mb-4">Participação por categoria no total de veículos.</p>
-                <div className="space-y-4">
-                  {[
-                    { label: 'Rotativo', valor: dados!.total_rotativo, cor: 'bg-blue-500' },
-                    { label: 'Cred./Mensalista', valor: dados!.total_cred_mens, cor: 'bg-emerald-500' },
-                    { label: 'Cartão débito', valor: dados!.total_cartao_debito, cor: 'bg-amber-500' },
-                  ].map(c => (
-                    <div key={c.label}>
-                      <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="inline-flex items-center gap-2 text-slate-600">
-                          <span className={`w-2.5 h-2.5 rounded-full ${c.cor}`} /> {c.label}
-                        </span>
-                        <span className="text-slate-800 font-semibold tabular-nums">
-                          {nfInt.format(c.valor)} <span className="text-slate-400 font-normal">({pct(c.valor, dados!.total_veiculos)}%)</span>
-                        </span>
+                <p className="text-xs text-slate-400 mb-2">Participação por categoria no total de veículos.</p>
+                {(() => {
+                  const comp = [
+                    { label: 'Rotativo', valor: dados!.total_rotativo, cor: '#3b82f6' },
+                    { label: 'Cred./Mensalista', valor: dados!.total_cred_mens, cor: '#10b981' },
+                    { label: 'Cartão débito', valor: dados!.total_cartao_debito, cor: '#f59e0b' },
+                  ].filter(c => c.valor > 0);
+                  return (
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <div className="relative shrink-0" style={{ width: 168, height: 168 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={comp} dataKey="valor" nameKey="label" cx="50%" cy="50%"
+                              innerRadius={54} outerRadius={78} paddingAngle={2} stroke="none">
+                              {comp.map(c => <Cell key={c.label} fill={c.cor} />)}
+                            </Pie>
+                            <Tooltip
+                              formatter={(v, n) => {
+                                const val = Number(v) || 0;
+                                return [`${nfInt.format(val)} (${pct(val, dados!.total_veiculos)}%)`, String(n)];
+                              }}
+                              contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <span className="text-lg font-bold text-slate-800 tabular-nums leading-none">{nfInt.format(dados!.total_veiculos)}</span>
+                          <span className="text-[11px] text-slate-400 mt-0.5">veículos</span>
+                        </div>
                       </div>
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-2 rounded-full ${c.cor}`} style={{ width: `${pct(c.valor, dados!.total_veiculos)}%` }} />
+                      <div className="flex-1 w-full space-y-2.5">
+                        {comp.map(c => (
+                          <div key={c.label} className="flex items-center justify-between text-sm">
+                            <span className="inline-flex items-center gap-2 text-slate-600">
+                              <span className="w-2.5 h-2.5 rounded-full" style={{ background: c.cor }} /> {c.label}
+                            </span>
+                            <span className="text-slate-800 font-semibold tabular-nums">
+                              {nfInt.format(c.valor)} <span className="text-slate-400 font-normal">({pct(c.valor, dados!.total_veiculos)}%)</span>
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
                 <p className="text-xs text-slate-400 mt-4 leading-relaxed">
                   As categorias seguem exatamente como o relatório (RFE) fornece a permanência:
                   <b> Rotativo</b> e <b>Cred./Mensalista</b> (tipo de cliente) e <b>Cartão débito</b> (forma de pagamento avulsa).
