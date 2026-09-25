@@ -34,6 +34,7 @@ import ImportacoesMalDatadasPage from './pages/admin/ImportacoesMalDatadas';
 import ChatFeedbackPage from './pages/admin/ChatFeedback';
 import EventosPage from './pages/Eventos';
 import RankingAnualPage from './pages/RankingAnual';
+import PermanenciaPage from './pages/Permanencia';
 
 function InstituicaoSelector() {
   const { instituicoes, selectedId, setSelectedId } = useInstituicao();
@@ -132,6 +133,7 @@ function AppLayout() {
             <Route path="/admin/chat-feedback" element={<ProtectedRoute><ChatFeedbackPage /></ProtectedRoute>} />
             <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
             <Route path="/ranking-anual" element={<ProtectedRoute><RankingAnualPage /></ProtectedRoute>} />
+            <Route path="/permanencia" element={<ProtectedRoute><PermanenciaPage /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>
