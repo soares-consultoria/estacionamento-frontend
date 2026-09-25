@@ -28,7 +28,21 @@ export interface Permanencia {
   faixas: PermanenciaFaixa[];
 }
 
+export interface MesPermanencia {
+  mes: number;
+  mes_nome: string;
+  permanencia_media_minutos: number | null;
+  permanencia_media_label: string | null;
+}
+export interface PermanenciaTendencia {
+  ano: number;
+  meses: MesPermanencia[];
+}
+
 export const permanenciaApi = {
   get: (ano: number, mes?: number) =>
     api.get<Permanencia>('/api/permanencia', { params: { ano, ...(mes ? { mes } : {}) } }).then(r => r.data),
+
+  tendencia: (ano: number) =>
+    api.get<PermanenciaTendencia>('/api/permanencia/tendencia', { params: { ano } }).then(r => r.data),
 };

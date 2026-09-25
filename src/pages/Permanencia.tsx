@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
-import { permanenciaApi, type Permanencia } from '../api/permanencia';
+import { permanenciaApi, type Permanencia, type PermanenciaTendencia } from '../api/permanencia';
 
 const nfInt = new Intl.NumberFormat('pt-BR');
 const nf1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -16,10 +17,26 @@ function pct(part: number, total: number): number {
   return total > 0 ? Math.round((part / total) * 100) : 0;
 }
 
+interface TendTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { mes: string; label: string | null } }>;
+}
+function TendenciaTooltip({ active, payload }: TendTooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-xs">
+      <p className="font-semibold text-slate-700">{p.mes}</p>
+      <p className="text-slate-600">Média: <b>{p.label ?? '—'}</b></p>
+    </div>
+  );
+}
+
 export default function PermanenciaPage() {
   const { selectedId } = useInstituicao();
   const [ano, setAno] = useState(new Date().getFullYear());
   const [dados, setDados] = useState<Permanencia | null>(null);
+  const [tendencia, setTendencia] = useState<PermanenciaTendencia | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +47,8 @@ export default function PermanenciaPage() {
       try {
         setLoading(true);
         setError(null);
-        const d = await permanenciaApi.get(ano);
-        if (!cancelled) setDados(d);
+        const [d, t] = await Promise.all([permanenciaApi.get(ano), permanenciaApi.tendencia(ano)]);
+        if (!cancelled) { setDados(d); setTendencia(t); }
       } catch {
         if (!cancelled) setError('Erro ao carregar a permanência.');
       } finally {
@@ -161,6 +178,34 @@ export default function PermanenciaPage() {
                 </p>
               </div>
             </div>
+
+            {/* Evolução da permanência média (12 meses) */}
+            {tendencia && tendencia.meses.some(m => m.permanencia_media_minutos != null) && (
+              <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+                <h2 className="text-base font-semibold text-slate-700">Evolução da permanência média</h2>
+                <p className="text-xs text-slate-400 mb-4">{ano} — permanência média estimada por mês (horas).</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart
+                    data={tendencia.meses.map(m => ({ mes: m.mes_nome, minutos: m.permanencia_media_minutos, label: m.permanencia_media_label }))}
+                    margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="gTend" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="mes" tick={{ fontSize: 11 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
+                    <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false}
+                      tickFormatter={(v: number) => `${(v / 60).toFixed(1).replace('.', ',')}h`} />
+                    <Tooltip content={<TendenciaTooltip />} />
+                    <Area type="monotone" dataKey="minutos" stroke="#10b981" strokeWidth={2.2}
+                      fill="url(#gTend)" connectNulls dot={{ r: 3 }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
 
             <p className="text-xs text-slate-400 leading-relaxed">
               As faixas vêm da estatística de permanência já extraída dos relatórios (RFE). A permanência média é uma
