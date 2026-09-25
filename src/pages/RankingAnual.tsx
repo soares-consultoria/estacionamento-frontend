@@ -144,7 +144,10 @@ export default function RankingAnualPage() {
                     <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Dia</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Fluxo</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Receita</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell w-44">Participação</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell w-48"
+                        title="Tamanho relativo ao maior dia do ranking (100% = líder).">
+                      Participação <span className="normal-case font-normal text-slate-400">(vs. líder)</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -172,11 +175,14 @@ export default function RankingAnualPage() {
                           {nfBRL.format(it.receita)}
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden min-w-[80px]">
-                            <div
-                              className={`h-1.5 rounded-full ${metrica === 'FLUXO' ? 'bg-blue-500' : 'bg-emerald-500'}`}
-                              style={{ width: `${pct}%` }}
-                            />
+                          <div className="flex items-center gap-2" title={`${pct}% do maior dia`}>
+                            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden flex-1 min-w-[60px]">
+                              <div
+                                className={`h-1.5 rounded-full ${metrica === 'FLUXO' ? 'bg-blue-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-slate-400 tabular-nums w-9 text-right">{pct}%</span>
                           </div>
                         </td>
                       </tr>
@@ -188,7 +194,8 @@ export default function RankingAnualPage() {
 
             <p className="text-xs text-slate-400">
               Ranking dos {itens.length} maiores dias de <b>{metrica === 'FLUXO' ? 'fluxo' : 'receita'}</b> em {ano},
-              na instituição selecionada. Alterne o critério nas abas acima.
+              na instituição selecionada. Alterne o critério nas abas acima. A coluna <b>Participação</b> mostra o quanto
+              cada dia representa em relação ao <b>maior dia</b> do ranking (100% = líder).
             </p>
           </>
         )}
