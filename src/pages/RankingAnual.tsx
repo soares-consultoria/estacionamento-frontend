@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useInstituicao } from '../hooks/useInstituicao';
@@ -32,19 +32,23 @@ export default function RankingAnualPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setDados(await rankingAnualApi.get(ano, metrica, 10));
-    } catch {
-      setError('Erro ao carregar o ranking.');
-    } finally {
-      setLoading(false);
-    }
-  }, [ano, metrica]);
-
-  useEffect(() => { load(); }, [load, selectedId]);
+  // Refaz ao trocar ano/métrica/instituição; ignora respostas obsoletas (evita race entre requests).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const d = await rankingAnualApi.get(ano, metrica, 10);
+        if (!cancelled) setDados(d);
+      } catch {
+        if (!cancelled) setError('Erro ao carregar o ranking.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [ano, metrica, selectedId]);
 
   const itens = dados?.itens ?? [];
   const maxValor = itens.reduce((mx, it) => Math.max(mx, metrica === 'FLUXO' ? it.fluxo : it.receita), 0);
@@ -89,7 +93,7 @@ export default function RankingAnualPage() {
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
         )}
 
-        {loading ? (
+        {error ? null : loading ? (
           <LoadingSpinner label="Carregando ranking..." />
         ) : !dados || itens.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-10 text-center">

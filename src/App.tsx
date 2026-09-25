@@ -9,6 +9,7 @@ import { useInstituicao } from './hooks/useInstituicao';
 import { usePlano } from './hooks/usePlano';
 import ChatAiWidget from './components/chatai/ChatAiWidget';
 import ProtectedRoute from './components/ProtectedRoute';
+import SistemaAdminRoute from './components/SistemaAdminRoute';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/Login';
 import DesempenhoAnualPage from './pages/DesempenhoAnual';
@@ -131,9 +132,9 @@ function AppLayout() {
             <Route path="/admin/consumo-ia" element={<ProtectedRoute><ConsumoIAPage /></ProtectedRoute>} />
             <Route path="/admin/importacoes-maldatadas" element={<ProtectedRoute><ImportacoesMalDatadasPage /></ProtectedRoute>} />
             <Route path="/admin/chat-feedback" element={<ProtectedRoute><ChatFeedbackPage /></ProtectedRoute>} />
-            <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
-            <Route path="/ranking-anual" element={<ProtectedRoute><RankingAnualPage /></ProtectedRoute>} />
-            <Route path="/permanencia" element={<ProtectedRoute><PermanenciaPage /></ProtectedRoute>} />
+            <Route path="/eventos" element={<SistemaAdminRoute><EventosPage /></SistemaAdminRoute>} />
+            <Route path="/ranking-anual" element={<SistemaAdminRoute><RankingAnualPage /></SistemaAdminRoute>} />
+            <Route path="/permanencia" element={<SistemaAdminRoute><PermanenciaPage /></SistemaAdminRoute>} />
           </Routes>
         </main>
       </div>

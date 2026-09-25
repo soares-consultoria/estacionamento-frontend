@@ -71,7 +71,7 @@ export default function EventosPage() {
   useEffect(() => { load(); }, [load, selectedId]);
 
   const kpis = useMemo(() => {
-    const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD no fuso local (evita erro de UTC)
     const futuros = eventos.filter(e => e.data_fim >= hoje).length;
     const categorias = new Set(eventos.map(e => e.categoria)).size;
     return { total: eventos.length, futuros, categorias };
@@ -177,8 +177,8 @@ export default function EventosPage() {
           </div>
         )}
 
-        {/* Lista */}
-        {loading ? (
+        {/* Lista (não mostra empty-state quando há erro, para não confundir com "sem dados") */}
+        {error ? null : loading ? (
           <LoadingSpinner label="Carregando eventos..." />
         ) : eventos.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-10 text-center">
